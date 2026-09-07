@@ -1,54 +1,52 @@
-# Compact mobile app: plan and verification
+# Compact mobile guide: scope and verification
 
 6 September 2026 · Air Force Station Suratgarh · Desert Braves
 
-## Implemented plan
+## Public-guide experience
 
-1. Keep Home focused on station identity, the event date, race choices and two useful shortcuts. Move the longer tribute and practical information to separate views.
-2. Use persistent phone navigation for Home, Races, Event guide and My entry. Preserve direct links, including old links to contact information and race categories.
-3. Present races as expandable choices. Show the selected distance and planned fee throughout registration; shorten instructions while preserving required fields, consent and validation.
-4. Remove FAQs and the marked artwork, timing and refreshment explanations. Keep both organiser telephone numbers directly available in the Event guide.
-5. Feature T-shirt collection on Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station. This does not announce bib collection. Route/reporting details remain pending.
-6. Use consistent Public Sans body text and Barlow Condensed display type. Correct grammar and punctuation, capitalise “Supreme” at the start of the citation and “Sacrifice” as requested.
-7. Add a separate “2025 memories” gallery using six organiser-supplied Suratgarh photographs. Omit the duplicate setup photo and the Bidar poster. The user's latest instruction excludes the video entirely.
+The phone experience keeps the first screen useful: host-station identity, date, race choices and clear routes to the Event guide and the secure app. Longer tribute, gallery and practical information are kept on separate views so the home screen does not become a long scroll.
 
-The painting remains a view of runners on a landscaped station road, with the canal only in the distant surrounding region. Its long visible explanatory caption has been removed. Image alternatives and historical photo credits remain.
+The public guide uses the Suratgarh visual system: deep navy for authority, ivory reading surfaces, restrained canal-green actions and warm desert-gold accents. Public Sans is used for reading and Barlow Condensed for event display copy. The artwork is an impression of a thriving desert station and surrounding region; it is not a route map.
 
-## Browser checks
+The compact guide includes:
 
-Tests used the production build in a Chromium-based browser with emulated viewport sizes. These are responsive browser checks, not tests on physical phones.
+1. Home, Races, Event guide and My entry shortcuts with direct links and keyboard focus handling.
+2. Expandable 5 KM, 10 KM and 21 KM choices, displaying the confirmed fees: ₹399, ₹499 and ₹499.
+3. The two organiser contact numbers directly in the Event guide: 8838463776 and 7027964880.
+4. T-shirt collection details: Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station.
+5. A 2025 memories gallery using supplied Suratgarh photographs. The warm-up video is intentionally excluded.
+6. Clear language and consistent typography, including the corrected `Supreme` and `Sacrifice` copy in the Sekhon tribute.
 
-| Check | Result |
+Routes, reporting guidance and payment details stay concise until approved. The route view will become an approved timeline once the station route is finalised.
+
+## Public and secure boundaries
+
+GitHub Pages is only the public guide. It must not serve registration, authenticated participant records, payment uploads or organiser operations. The Pages build is compiled without the private app modules or Supabase browser configuration.
+
+The Netlify app will contain sign-in, station-code registration, the participant’s own entry and authorised organiser tools. The preview call to action remains closed until the final Netlify/Supabase configuration and payment details are ready. Its sample QR is visibly marked **YET TO UPDATE** and cannot be used for payment.
+
+The secure release includes three additional guards: migration `012` records a physical T-shirt issue only after verified payment; migration `013` lets an invited participant correct a rejected payment only by creating a new immutable proof and pending-review attempt; migration `014` keeps finish-line completion disabled until an AAL2 completion desk and approved timing settings are deliberately enabled. The Google Sheet remains a one-way private mirror and is never a way to change these records.
+
+Before any secure-app deployment, apply migrations `001`–`014` in staging, create the final HTTPS Netlify origin, and set Supabase Edge Function `SITE_ORIGIN` to exactly that origin with no path, query, fragment, credentials or wildcard. Then deploy `submit-registration`, `correct-payment`, `organiser-payment-proof`, `drive-register` and `certificate`, test their origin and sign-in denials, and only then rehearse the app. The Pages guide cannot be used as `SITE_ORIGIN`.
+
+## Responsive checks to retain
+
+Before any release, check the built public guide and secure app at 320 × 740, 390 × 844 and 1366 × 768 or wider:
+
+| Check | Expected result |
 | --- | --- |
-| Home at 320 × 740 and 390 × 844 | No horizontal overflow. Final 390 px home is 1,510 px tall, including the new gallery shortcut. |
-| Home length compared with previous 390 × 844 layout | Reduced from 8,070 to 1,510 px, approximately 81% shorter. Longer information remains reachable on separate views. |
-| Laptop at 1366 × 768 | Home, Races, Event guide and Why we run fit; no horizontal overflow. Images loaded. |
-| 5 / 10 / 21 KM actions | Correct preview distance and ₹600 / ₹700 / ₹800 planned fees. Changing the race inside registration updates the selection. |
-| Required participant fields | An empty form stays on the participant step. Synthetic valid details progress to Payment preview and Review. |
-| Registration at 320 px | Found and fixed intrinsic grid-width clipping. Final dialog content width equals scroll width; all four progress labels fit. |
-| Laptop registration | Centred 680 px dialog, fully within 1366 × 768 viewport. |
-| Preview protection | Submit for verification remains disabled. No entry, payment, receipt or consent was submitted during testing. |
-| Contact and collection links | Both telephone destinations correct. Collection date/time/place present. Old #faqs opens contact information; #guide-kit focuses collection heading. |
-| Navigation focus | Repeated Home navigation focuses the heading; direct guide anchors focus the appropriate heading. |
-| My entry and policies | Open and return actions work. Terms include collection details; Escape closes the policy dialog. |
-| Copy review | FAQs and marked notes absent. “Supreme” and “Sacrifice” correct. Policy punctuation cleaned without changing substantive terms. |
-| Photo gallery at 320 / 390 / 1366 px | No horizontal overflow. Previous wraps to photo 6; Next returns to photo 1. Thumbnail selection updates the image and accessible current state. Controls meet 44 px minimum touch size. |
-| Gallery access and media | Home and tribute shortcuts open the gallery; Choose a race returns to Races. Images load. No video element or video asset is published. |
+| Navigation | No horizontal overflow; direct links land on a useful heading; touch targets remain at least 44 px. |
+| Race choice | The selected distance and confirmed fee stay visible and readable. |
+| Guide content | Phone numbers and T-shirt collection details are easy to find. |
+| Artwork and gallery | Images crop without obscuring essential copy; supplied photos remain credited where required. |
+| Secure-app handoff | Public actions point to the configured HTTPS Netlify app and never expose a localhost address. |
+| Payment preview | Payment acceptance and screenshot upload remain unavailable until real payment details and backend configuration are active. |
+| Correction and collection | A rejected entry shows a correction path without making another payment; organiser collection is available only after verified payment. |
+| Race-day guard | Completion tools remain unavailable until the approved timing and completion-desk settings are enabled for rehearsed organisers. |
+| Accessibility | Keyboard navigation, focus return, image alternatives and colour contrast remain intact. |
 
-Automated checks: 40 tests, TypeScript checking and production build pass. Navigation tests include canonical links, legacy aliases, malformed hashes and certificate-query precedence. Existing tests cover registration validation, availability, database lifecycle and certificate generation. The build retains the known non-blocking shared-Supabase-import warning.
+Use `pnpm typecheck`, `pnpm test` and `pnpm run verify:targets` before a release. Physical iPhone Safari and Android browser checks remain required before opening registration.
 
-## Limits and launch state
+## Launch state
 
-Physical iPhone Safari/Android testing, native browser Back and live email/payment/storage/Drive flows are not fully verified. The backend still needs production credentials and activation. Registration remains closed, and the sample QR cannot receive payment. No participant records or Google Drive sharing changed in this release.
-
-## Publication
-
-Target: https://reds-aviation.github.io/sekhonmarathon_suratgarh_2026/
-
-The compact redesign was first published in source commit `1931efe`, gh-pages `820c2b7`; Pages run `33984267618` succeeded. The photo-only follow-up uses production assets `index-CdsxBAVa.js` and `index-Cd_7tsEQ.css`.
-
-The six full-size gallery WebP files and six thumbnails total 1.38 MB. Only the selected main photograph is rendered. The home page loads one 10 KB thumbnail; full-size gallery photos load when the gallery is opened. Source photos are proportionally resized, without retouching. Historical dates and notices are identified as belonging to 2025.
-
-## Additional layout reference
-
-Reviewed https://sekhoniafmarathon.in/ on phone and laptop for ideas only, as requested. Its grouped runner information, category selection and photo-led past-edition section support the current compact structure. The home gallery shortcut now uses a small authentic Suratgarh start-line thumbnail. Delhi fees, discounts, sponsors, programme, routes and registration rules were not copied. The requested FAQ removal and video exclusion remain in place.
+No participant data, payment screenshot, payment decision or Google Drive sharing is created by the public-guide build. The secure backend remains blocked until the final Netlify origin, Supabase project, exact `SITE_ORIGIN`, verified organiser accounts, real UPI configuration and staging rehearsal are ready.

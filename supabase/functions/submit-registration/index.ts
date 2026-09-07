@@ -1,7 +1,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.115.0';
-import { EVENT_ID, MAX_RECEIPT_BYTES, validatePayload, receiptExtension } from './validation.ts';
+import { EVENT_ID, MAX_RECEIPT_BYTES, validatePayload, receiptDigestSha256, receiptExtension } from './validation.ts';
 
-const allowedOrigin = Deno.env.get('SITE_ORIGIN') || 'https://reds-aviation.github.io';
+function configuredSiteOrigin(value:string|undefined) {
+ if(!value)throw new Error('SITE_ORIGIN must be configured as an HTTPS origin.');
+ let parsed:URL;
+ try{parsed=new URL(value);}catch{throw new Error('SITE_ORIGIN must be configured as an HTTPS origin.');}
+ if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.pathname!=='/'||parsed.search||parsed.hash)throw new Error('SITE_ORIGIN must be an HTTPS origin without a path.');
+ return parsed.origin;
+}
+const allowedOrigin = configuredSiteOrigin(Deno.env.get('SITE_ORIGIN'));
 const url = Deno.env.get('SUPABASE_URL')!;
 const anon = Deno.env.get('SUPABASE_ANON_KEY')!;
 const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -44,6 +51,7 @@ Deno.serve(async(req:Request)=>{
   if(raceError)return json({error:'That race category is unavailable.'},400);
   const receipt=form.get('receipt');if(!(receipt instanceof File))return json({error:'Please attach your payment screenshot.'},400);
   const bytes=new Uint8Array(await receipt.arrayBuffer());const ext=receiptExtension(bytes,receipt.type);
+  const receiptDigest=await receiptDigestSha256(bytes);
   const receiptPath=`${user.id}/${data.submission_id}/receipt.${ext}`;
   const {error:uploadError}=await admin.storage.from(bucket).upload(receiptPath,bytes,{contentType:receipt.type,upsert:false,cacheControl:'0'});
   if(uploadError){
@@ -51,11 +59,9 @@ Deno.serve(async(req:Request)=>{
    // Reuse only identical bytes at the same authenticated canonical path.
    const {data:saved,error:savedError}=await admin.storage.from(bucket).download(receiptPath);
    if(savedError||!saved)return json({error:'Your screenshot could not be saved. Please retry shortly without making another payment.'},503);
-   const originalHash=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
-   const storedHash=new Uint8Array(await crypto.subtle.digest('SHA-256',await saved.arrayBuffer()));
-   if(!originalHash.every((v,i)=>storedHash[i]===v))return json({error:'This entry already has a different screenshot. Reopen registration to start a new entry.'},409);
+   if(receiptDigest!==await receiptDigestSha256(new Uint8Array(await saved.arrayBuffer())))return json({error:'This entry already has a different screenshot. Reopen registration to start a new entry.'},409);
   }
-  const {data:row,error:insertError}=await admin.from('registrations').insert({...data,user_id:user.id,email:user.email,fee_paise:race.fee_paise,receipt_path:receiptPath,payment_status:'pending_review'}).select('id,payment_status').single();
+  const {data:row,error:insertError}=await admin.from('registrations').insert({...data,user_id:user.id,email:user.email,fee_paise:race.fee_paise,receipt_path:receiptPath,receipt_digest_sha256:receiptDigest,payment_status:'pending_review'}).select('id,payment_status').single();
   if(insertError){
    // If the insert response was uncertain, confirm it before removing the file.
    const {data:confirmed}=await admin.from('registrations').select('*').eq('user_id',user.id).eq('submission_id',data.submission_id).maybeSingle();

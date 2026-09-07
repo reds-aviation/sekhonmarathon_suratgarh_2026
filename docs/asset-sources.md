@@ -44,6 +44,14 @@ The organiser supplied `sekhon_marathon_work_chat_media.zip` and explicitly requ
 
 The near-duplicate setup photograph (05) and the poster for Air Force Station Bidar (08) were omitted. The organiser subsequently requested leaving out the video; no video or video poster is included in the website. The original upload remains unchanged locally.
 
+## Organiser-supplied 2026 campaign posters, 7 September 2026
+
+The organiser supplied campaign-poster PNGs and requested their use on the website. The landscape pieces are published as `legacy-of-courage-poster.png`, `anniversary-poster.png` and `finish-line-poster.png` (each 1672 × 941); `run-soar-inspire-poster.png` is 1491 × 1055; and `poster-series.png` is a 1536 × 1024 set of three portrait designs. All are under `public/assets/campaign-2026/`. They appear together in the separate Campaign & memories view at their natural ratios, rather than as cropped hero backgrounds. The poster text is artwork; current registration status, fees and payment information remain in the live HTML interface and configuration.
+
+### Text-free home artwork
+
+Using the organiser-supplied Legacy of Courage poster as the edit target, the built-in image tool produced desktop and mobile source images that were delivery-compressed without changing their composition into `suratgarh-home-hero-desktop-v3.jpg` (1774 × 887) and `suratgarh-home-hero-mobile-v3.jpg` (1448 × 1086). The homepage uses them as a text-free campaign illustration: the live HTML overlay supplies only “Desert Braves”, “Air Force Station Suratgarh” and “The Land of Sun and Sand”. The artwork is an artistic impression of the station community, runners and aircraft, not a route map, a flypast announcement or a documentary photograph.
+
 The gallery photos were resized proportionally and re-encoded as WebP, without retouching or invented details. Small separate thumbnails support a compact gallery; original source metadata is excluded from the public derivatives. Their use is based on the organiser's supplied materials and instruction, not an independently researched public reuse licence.
 
 The long visible canvas caption was removed at the organiser's request during the compact redesign. Its alternative text still identifies the illustration as a canvas painting with the canal in the distant surrounding region.

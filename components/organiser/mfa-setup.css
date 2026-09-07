@@ -1,0 +1,181 @@
+.organiser-mfa {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid #c5ddd6;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eff8f4, #fffdf7);
+  color: var(--desk-ink, #112f3c);
+}
+
+.organiser-mfa__heading,
+.organiser-mfa__start,
+.organiser-mfa--unavailable,
+.organiser-mfa--checking,
+.organiser-mfa--verified {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.organiser-mfa__heading > svg,
+.organiser-mfa__start > svg,
+.organiser-mfa--unavailable > svg,
+.organiser-mfa--verified > svg {
+  flex: 0 0 auto;
+  color: var(--desk-teal, #176d63);
+}
+
+.organiser-mfa__heading span {
+  display: block;
+  color: var(--desk-teal, #176d63);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.organiser-mfa h3 {
+  margin: 4px 0 5px;
+  font-size: clamp(19px, 2.6vw, 24px);
+  letter-spacing: -0.03em;
+}
+
+.organiser-mfa p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--desk-muted, #5d7474);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.organiser-mfa__start {
+  align-items: center;
+  padding: 14px;
+  border: 1px solid #d1e2dc;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.organiser-mfa__start > div { min-width: 0; flex: 1; }
+.organiser-mfa__start strong { display: block; margin-bottom: 3px; font-size: 14px; }
+
+.organiser-mfa button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 13px;
+  background: var(--desk-teal, #176d63);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 730;
+  line-height: 1.2;
+}
+
+.organiser-mfa button:hover { background: var(--desk-teal-dark, #0b4c47); }
+.organiser-mfa button:disabled { cursor: wait; opacity: 0.66; }
+.organiser-mfa button:focus-visible,
+.organiser-mfa input:focus-visible { outline: 3px solid #d28b42; outline-offset: 3px; }
+
+.organiser-mfa__challenge {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.organiser-mfa__challenge label {
+  display: grid;
+  gap: 6px;
+  color: var(--desk-ink, #112f3c);
+  font-size: 12px;
+  font-weight: 730;
+}
+
+.organiser-mfa__challenge input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #b9cbc5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--desk-ink, #112f3c);
+  font: inherit;
+  font-size: 19px;
+  font-weight: 720;
+  letter-spacing: 0.22em;
+}
+
+.organiser-mfa__qr {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #d1e2dc;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.organiser-mfa__qr img {
+  display: block;
+  flex: 0 0 auto;
+  width: 168px;
+  height: 168px;
+  border: 8px solid #fff;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.organiser-mfa__restart {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: 32px !important;
+  padding: 6px 0 !important;
+  background: transparent !important;
+  color: var(--desk-teal, #176d63) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.organiser-mfa__message {
+  padding: 10px 12px;
+  border: 1px solid #efc8be;
+  border-radius: 8px;
+  background: #fff3f0;
+  color: #8e3d29 !important;
+}
+
+.organiser-mfa--unavailable { border-color: #d8deda; background: #f5f7f6; }
+.organiser-mfa--checking { align-items: center; color: var(--desk-muted, #5d7474); font-size: 13px; }
+.organiser-mfa--verified { border-color: #b9dace; background: #eaf5ef; }
+.organiser-mfa--verified strong,
+.organiser-mfa--unavailable strong { display: block; margin-bottom: 3px; font-size: 14px; }
+.organiser-mfa__spin { animation: organiser-mfa-spin 0.9s linear infinite; }
+
+@keyframes organiser-mfa-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 620px) {
+  .organiser-mfa__start,
+  .organiser-mfa__qr { align-items: flex-start; flex-wrap: wrap; }
+  .organiser-mfa__start button { width: 100%; }
+  .organiser-mfa__challenge { grid-template-columns: 1fr; }
+  .organiser-mfa__challenge button { width: 100%; }
+  .organiser-mfa__qr { display: grid; grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .organiser-mfa__qr p { max-width: 310px; }
+  .organiser-mfa__restart { justify-self: stretch; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .organiser-mfa *,
+  .organiser-mfa *::before,
+  .organiser-mfa *::after { transition-duration: 0.01ms !important; }
+  .organiser-mfa__spin { animation-duration: 0.01ms; animation-iteration-count: 1; }
+}

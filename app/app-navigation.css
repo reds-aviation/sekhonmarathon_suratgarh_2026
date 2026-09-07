@@ -216,6 +216,65 @@
   color: #52665f;
   margin-top: 9px;
 }
+.app-hero--campaign {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  padding: 24px 0 36px;
+}
+.app-hero--campaign .app-painting {
+  margin: 0;
+}
+.app-hero--campaign .app-painting img {
+  border-radius: 8px;
+}
+.app-hero-copy--campaign {
+  position: absolute;
+  z-index: 1;
+  top: 25%;
+  right: 0;
+  left: 0;
+  width: min(46%, 560px);
+  box-sizing: border-box;
+  margin-inline: auto;
+  padding: 18px;
+  color: #102f3b;
+  text-align: center;
+  text-shadow: 0 1px 18px rgb(255 251 241 / 90%);
+}
+.app-hero-copy--campaign .app-kicker {
+  margin: 0 0 9px;
+  color: #805536;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.app-hero--campaign h1 {
+  margin: 0;
+  color: #102f3b;
+  font-size: clamp(42px, 5.5vw, 76px);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+.app-hero--campaign h1 span {
+  display: block;
+  margin-bottom: 7px;
+  color: #286a60;
+  font-family: 'Barlow', Arial, sans-serif;
+  font-size: 0.3em;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+}
+.app-hero-copy--campaign .app-tagline {
+  margin: 14px 0 0;
+  color: #805536;
+  font-size: clamp(11px, 1.25vw, 16px);
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
 .app-home-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -1092,8 +1151,21 @@
     padding: 0;
     background: #f6f3ea;
   }
+  .app-hero--campaign {
+    position: relative;
+    display: block;
+    padding: 0;
+    background: transparent;
+  }
   .app-hero-copy {
     padding: 23px 22px 20px;
+  }
+  .app-hero-copy--campaign {
+    top: 24%;
+    right: 0;
+    left: 0;
+    width: 72%;
+    padding: 6px;
   }
   .app-kicker {
     font-size: 12px;
@@ -1104,8 +1176,27 @@
     letter-spacing: -0.8px;
     margin: 13px 0;
   }
+  .app-hero--campaign h1 {
+    font-size: clamp(27px, 9.2vw, 42px);
+    line-height: 0.89;
+  }
+  .app-hero--campaign h1 span {
+    margin-bottom: 5px;
+    font-size: 0.31em;
+    letter-spacing: 0.11em;
+  }
+  .app-hero-copy--campaign .app-kicker {
+    margin-bottom: 6px;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
   .app-tagline {
     font-size: 17px;
+  }
+  .app-hero-copy--campaign .app-tagline {
+    margin-top: 9px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
   }
   .app-event-date {
     margin: 17px 0 15px;
@@ -1128,6 +1219,9 @@
   }
   .app-painting {
     padding: 0 15px 12px;
+  }
+  .app-hero--campaign .app-painting {
+    padding: 0;
   }
   .app-painting img {
     aspect-ratio: 4/3;

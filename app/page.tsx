@@ -9,7 +9,6 @@ import {
 } from 'react';
 import {
   ArrowRight,
-  CalendarDays,
   ShieldCheck,
   Medal,
   Shirt,
@@ -38,18 +37,42 @@ import {
   type PortalView,
 } from '@/lib/site-navigation';
 
-const EventPortal = lazy(() =>
-  import('@/components/event-portal').then((module) => ({
-    default: module.EventPortal,
-  })),
-);
 const base = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const isPublicGuide = import.meta.env.VITE_BUILD_TARGET === 'pages';
+const EventPortal = isPublicGuide
+  ? null
+  : lazy(() =>
+      import('@/components/event-portal').then((module) => ({
+        default: module.EventPortal,
+      })),
+    );
+const OrganiserPaymentReviewQueue = isPublicGuide
+  ? null
+  : lazy(() =>
+      import('@/components/organiser/payment-review-queue').then((module) => ({
+        default: module.OrganiserPaymentReviewQueue,
+      })),
+    );
+const OrganiserTshirtCollectionDesk = isPublicGuide
+  ? null
+  : lazy(() =>
+      import('@/components/organiser/tshirt-collection-desk').then((module) => ({
+        default: module.OrganiserTshirtCollectionDesk,
+      })),
+    );
+const OrganiserRaceCompletionDesk = isPublicGuide
+  ? null
+  : lazy(() =>
+      import('@/components/organiser/race-completion-desk').then((module) => ({
+        default: module.OrganiserRaceCompletionDesk,
+      })),
+    );
 const titles: Record<SitePage, string> = {
   home: 'Sekhon IAF Marathon 2026',
   races: 'Choose your race',
   guide: 'Event guide',
   tribute: 'Why we run',
-  gallery: '2025 memories',
+  gallery: 'Campaign & memories',
 };
 
 export default function Home() {
@@ -62,35 +85,52 @@ export default function Home() {
   const [anchor, setAnchor] = useState(initial.anchor);
   const [selected, setSelected] = useState<string | null>(null);
   const [policy, setPolicy] = useState<string | null>(null);
+  const [organiserDesk, setOrganiserDesk] = useState<
+    'payments' | 'tshirts' | 'completion'
+  >('payments');
   const [expandedRace, setExpandedRace] = useState<string | null>(
     initial.anchor?.startsWith('race-') ? initial.anchor.slice(5) : null,
   );
-  const lastPage = useRef<SitePage>(initial.page || 'home');
+  const [lastPage, setLastPage] = useState<SitePage>(initial.page || 'home');
   const focusNext = useRef(Boolean(initial.anchor));
   const { availability, config, confirmedFees } = useEventAvailability();
-  const canRegister = availability === 'open';
+  const canRegister = !isPublicGuide && availability === 'open';
   const liveFeesRequired =
-    !!config?.payment_configured || availability === 'unavailable';
-  const feeStatus = liveFeesRequired
-    ? confirmedFees
-      ? 'Confirmed'
-      : 'Unavailable'
-    : 'Planned';
+    !isPublicGuide &&
+    (!!config?.payment_configured || availability === 'unavailable');
+  const feeStatus = isPublicGuide
+    ? 'Confirmed'
+    : liveFeesRequired
+      ? confirmedFees
+        ? 'Confirmed'
+        : 'Unavailable'
+      : 'Confirmed';
   const feeLabel = (race: (typeof RACES)[number]) => {
-    const amount = liveFeesRequired
-      ? confirmedFees?.[race.distance as keyof typeof confirmedFees]
-      : race.fee;
+    const amount = isPublicGuide
+      ? race.fee
+      : liveFeesRequired
+        ? confirmedFees?.[race.distance as keyof typeof confirmedFees]
+        : race.fee;
     return amount === undefined
       ? 'Unavailable'
       : `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
   };
-  const status = {
-    loading: 'Checking registration',
-    upcoming: 'Registration opens soon',
-    open: 'Registration open',
-    closed: 'Registration closed',
-    unavailable: 'Registration temporarily unavailable',
-  }[availability];
+  const status = isPublicGuide
+    ? 'Registration is currently closed'
+    : {
+        loading: 'Checking registration',
+        upcoming: 'Registration opens soon',
+        open: 'Registration open',
+        closed: 'Registration closed',
+        unavailable: 'Registration temporarily unavailable',
+      }[availability];
+
+  function secureAppHref(hash = '', search = '') {
+    const url = new URL(import.meta.env.VITE_PUBLIC_APP_URL);
+    url.search = search;
+    url.hash = hash;
+    return url.href;
+  }
 
   function applyLocation() {
     const next = parseSiteLocation(
@@ -99,7 +139,7 @@ export default function Home() {
     );
     if (next.page) {
       setPage(next.page);
-      lastPage.current = next.page;
+      setLastPage(next.page);
     }
     setPortal(next.portal);
     setAnchor(next.anchor);
@@ -171,10 +211,14 @@ export default function Home() {
     go(hashForPage(next));
   }
   function openPortal(view: PortalView = 'participant') {
+    if (isPublicGuide) {
+      window.location.assign(secureAppHref(hashForPortal(view)));
+      return;
+    }
     go(hashForPortal(view));
   }
   function closePortal() {
-    go(hashForPage(lastPage.current), true);
+    go(hashForPage(lastPage), true);
   }
   function follow(
     event: MouseEvent<HTMLAnchorElement>,
@@ -192,12 +236,109 @@ export default function Home() {
     event.preventDefault();
     go(hash || hashForPage(next));
   }
-  if (portal)
+  if (portal && isPublicGuide)
+    return (
+      <main className="portal-recovery">
+        <p>AIR FORCE STATION SURATGARH</p>
+        <h1>Continue in the secure app</h1>
+        <p>
+          Registration, organiser access and certificate checks are handled in
+          the authenticated event app. The public guide remains available here.
+        </p>
+        <div>
+          <a
+            className="app-primary"
+            href={secureAppHref(
+              hashForPortal(portal),
+              portal === 'verify' ? window.location.search : '',
+            )}
+          >
+            Open secure app <ArrowRight size={18} />
+          </a>
+          <a href={hashForPage(lastPage)}>Return to event guide</a>
+        </div>
+      </main>
+    );
+
+  if (portal === 'organiser' && OrganiserPaymentReviewQueue)
     return (
       <PortalRecovery onClose={closePortal}>
         <Suspense
           fallback={
-            <main className="portal-loading" role="status">
+            <main className="portal-loading" aria-live="polite">
+              Opening organiser payment review…
+            </main>
+          }
+        >
+          <main className="organiser-payment-portal" id="main">
+            <div className="organiser-payment-portal__toolbar">
+              <button onClick={closePortal} type="button">
+                Return to event
+              </button>
+            </div>
+            <div
+              className="organiser-payment-portal__desk-tabs"
+              aria-label="Organiser tools"
+              role="tablist"
+            >
+              <button
+                aria-controls="organiser-payment-desk"
+                aria-selected={organiserDesk === 'payments'}
+                onClick={() => setOrganiserDesk('payments')}
+                role="tab"
+                type="button"
+              >
+                Payment review
+              </button>
+              <button
+                aria-controls="organiser-tshirt-desk"
+                aria-selected={organiserDesk === 'tshirts'}
+                onClick={() => setOrganiserDesk('tshirts')}
+                role="tab"
+                type="button"
+              >
+                T-shirt collection
+              </button>
+              <button
+                aria-controls="organiser-completion-desk"
+                aria-selected={organiserDesk === 'completion'}
+                onClick={() => setOrganiserDesk('completion')}
+                role="tab"
+                type="button"
+              >
+                Completion desk
+              </button>
+            </div>
+            {organiserDesk === 'payments' ? (
+              <div id="organiser-payment-desk" role="tabpanel">
+                <OrganiserPaymentReviewQueue />
+              </div>
+            ) : OrganiserTshirtCollectionDesk ? (
+              organiserDesk === 'tshirts' ? (
+                <div id="organiser-tshirt-desk" role="tabpanel">
+                  <OrganiserTshirtCollectionDesk />
+                </div>
+              ) : OrganiserRaceCompletionDesk ? (
+                <div id="organiser-completion-desk" role="tabpanel">
+                  <OrganiserRaceCompletionDesk />
+                </div>
+              ) : null
+            ) : OrganiserRaceCompletionDesk ? (
+              <div id="organiser-completion-desk" role="tabpanel">
+                <OrganiserRaceCompletionDesk />
+              </div>
+            ) : null}
+          </main>
+        </Suspense>
+      </PortalRecovery>
+    );
+
+  if (portal && EventPortal)
+    return (
+      <PortalRecovery onClose={closePortal}>
+        <Suspense
+          fallback={
+            <main className="portal-loading" aria-live="polite">
               Opening My entry…
             </main>
           }
@@ -205,6 +346,7 @@ export default function Home() {
           <EventPortal
             initialView={portal}
             onViewChange={openPortal}
+            onOpenOrganiser={() => openPortal('organiser')}
             onClose={closePortal}
           />
         </Suspense>
@@ -235,6 +377,7 @@ export default function Home() {
             onClick={(event) => follow(event, 'home')}
             aria-label="Air Force Station Suratgarh — home"
           >
+            {/* oxlint-disable-next-line next/no-img-element -- Vite serves this fixed-size, optimized local asset. */}
             <img
               src={`${base}/assets/sekhon-logo.webp`}
               alt="Sekhon Marathon"
@@ -283,47 +426,31 @@ export default function Home() {
 
         {page === 'home' && (
           <main id="main" className="app-home" tabIndex={-1}>
-            <section className="app-hero" aria-labelledby="home-title">
-              <div className="app-hero-copy">
-                <p className="app-kicker">Desert Braves · 2026</p>
-                <h1 id="home-title" tabIndex={-1}>
-                  SEKHON IAF
-                  <br />
-                  <span>MARATHON</span>
-                </h1>
-                <p className="app-tagline">The Land of Sun and Sand.</p>
-                <div className="app-event-date">
-                  <CalendarDays size={17} />
-                  <strong>Sunday, 4 October</strong>
-                  <span>05:00–10:00 IST</span>
-                </div>
-                <a
-                  href="#races"
-                  className="app-primary"
-                  onClick={(event) => follow(event, 'races')}
-                >
-                  Choose my race <ArrowRight size={18} />
-                </a>
-                <p className="app-status" role="status">
-                  <span />
-                  {status}
-                </p>
-              </div>
-              <figure className="app-painting">
+            <section className="app-hero app-hero--campaign" aria-labelledby="home-title">
+              <figure className="app-painting app-painting--campaign">
                 <picture>
                   <source
                     media="(max-width: 700px)"
-                    srcSet={`${base}/assets/suratgarh-station-mobile-v2.webp`}
+                    srcSet={`${base}/assets/suratgarh-home-hero-mobile-v3.jpg`}
                   />
+                  {/* oxlint-disable-next-line next/no-img-element -- Vite serves this locally generated hero artwork. */}
                   <img
-                    src={`${base}/assets/suratgarh-station-desktop-v2.webp`}
+                    src={`${base}/assets/suratgarh-home-hero-desktop-v3.jpg`}
                     width="1774"
                     height="887"
                     fetchPriority="high"
-                    alt="Canvas painting of runners on a landscaped station road, with IAF aircraft above and the surrounding region’s canal in the distance"
+                    alt="Text-free campaign illustration of Flying Officer Nirmal Jit Singh Sekhon, runners on a landscaped station road at sunrise, and Indian Air Force aircraft above Air Force Station Suratgarh"
                   />
                 </picture>
               </figure>
+              <div className="app-hero-copy app-hero-copy--campaign">
+                <p className="app-kicker">Desert Braves</p>
+                <h1 id="home-title" tabIndex={-1}>
+                  <span>Air Force Station</span>
+                  Suratgarh
+                </h1>
+                <p className="app-tagline">The Land of Sun and Sand</p>
+              </div>
             </section>
             <div className="app-home-grid">
               <section aria-labelledby="home-races-title">
@@ -359,7 +486,7 @@ export default function Home() {
                     ? confirmedFees
                       ? 'Fees shown are confirmed.'
                       : 'Fees are unavailable. Please try again later.'
-                    : 'Final fees will be confirmed before payment opens.'}
+                    : 'Payment details will be published before registration opens.'}
                 </p>
               </section>
               <section className="app-home-links" aria-label="Before your run">
@@ -380,6 +507,7 @@ export default function Home() {
                   href="#tribute"
                   onClick={(event) => follow(event, 'tribute')}
                 >
+                  {/* oxlint-disable-next-line next/no-img-element -- Vite serves this fixed-size, optimized local asset. */}
                   <img
                     src={`${base}/assets/nirmal-jit-singh-sekhon-portrait.webp`}
                     alt="Flying Officer Nirmal Jit Singh Sekhon PVC"
@@ -398,18 +526,20 @@ export default function Home() {
                   className="app-tribute-teaser"
                   href="#gallery"
                   onClick={(event) => follow(event, 'gallery')}
+                  aria-label="View 2026 campaign artwork and 2025 event memories"
                 >
+                  {/* oxlint-disable-next-line next/no-img-element -- Vite serves this fixed-size, optimized local asset. */}
                   <img
-                    src={`${base}/assets/archive-2025/04_runners_at_start_line-thumb.webp`}
+                    src={`${base}/assets/sekhon-logo.webp`}
                     alt=""
                     width="72"
                     height="54"
                     loading="lazy"
                   />
                   <span>
-                    <b>2025 memories</b>
+                    <b>2026 campaign artwork</b>
                     <small>
-                      View six event photos <ArrowRight size={15} />
+                      Posters and 2025 memories <ArrowRight size={15} />
                     </small>
                   </span>
                 </a>
@@ -424,7 +554,7 @@ export default function Home() {
               <p className="app-kicker">Your start line</p>
               <h1 tabIndex={-1}>Choose your distance.</h1>
               <p>Tap a race for details.</p>
-              <p className="app-status" role="status">
+              <p className="app-status" aria-live="polite">
                 <span />
                 {status}
               </p>
@@ -461,13 +591,19 @@ export default function Home() {
                   </summary>
                   <div className="app-race-detail">
                     <p>{race.description}</p>
-                    <button
-                      className="app-primary"
-                      onClick={() => setSelected(race.distance)}
-                    >
-                      {canRegister ? 'Register for' : 'Preview'} {race.distance}{' '}
-                      KM <ArrowRight size={18} />
-                    </button>
+                    {isPublicGuide ? (
+                      <a className="app-primary" href={secureAppHref('#races')}>
+                        Register in secure app <ArrowRight size={18} />
+                      </a>
+                    ) : (
+                      <button
+                        className="app-primary"
+                        onClick={() => setSelected(race.distance)}
+                      >
+                        {canRegister ? 'Register for' : 'Preview'}{' '}
+                        {race.distance} KM <ArrowRight size={18} />
+                      </button>
+                    )}
                   </div>
                 </details>
               ))}
@@ -534,7 +670,7 @@ export default function Home() {
               </button>
               <button onClick={() => setPolicy('privacy')}>Privacy</button>
               <button onClick={() => setPolicy('refund')}>Refund policy</button>
-              <button onClick={() => navigate('gallery')}>2025 gallery</button>
+              <button onClick={() => navigate('gallery')}>Campaign &amp; memories</button>
               <button onClick={() => openPortal('verify')}>
                 Verify a certificate
               </button>

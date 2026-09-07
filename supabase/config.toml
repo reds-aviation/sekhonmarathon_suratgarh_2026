@@ -4,9 +4,18 @@ project_id = "sekhonmarathon_suratgarh_2026"
 # The function verifies the user JWT via Auth getUser on every POST.
 verify_jwt = false
 
+[functions.correct-payment]
+# The function verifies the user JWT via Auth getUser on every POST.
+verify_jwt = false
+
 [functions.drive-register]
 # Dedicated server-to-server token checked by the function; never a public key.
 verify_jwt = false
 [functions.certificate]
 # Every request verifies Auth getUser; backend RPCs are service-role-only.
+verify_jwt = false
+
+[functions.organiser-payment-proof]
+# The function verifies Auth getUser itself, then uses the caller JWT for its
+# narrow capability-gated authorization RPC.
 verify_jwt = false

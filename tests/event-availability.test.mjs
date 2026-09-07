@@ -19,9 +19,9 @@ const ready = {
   contact_email: null,
 };
 const raceConfig = [
-  { event_id: ready.id, race: '5', fee_paise: 60000 },
-  { event_id: ready.id, race: '10', fee_paise: 70000 },
-  { event_id: ready.id, race: '21', fee_paise: 80000 },
+  { event_id: ready.id, race: '5', fee_paise: 39900 },
+  { event_id: ready.id, race: '10', fee_paise: 49900 },
+  { event_id: ready.id, race: '21', fee_paise: 49900 },
 ];
 
 test('unconfigured preview is upcoming before its deadline, then closes', () => {
@@ -118,9 +118,9 @@ test('confirmed fees reflect backend prices even when they differ from planned v
     fee_paise: { 5: 65000, 10: 92550, 21: 110000 }[row.race],
   }));
   assert.deepEqual(resolveConfirmedRaceFees(raceConfig), {
-    5: 600,
-    10: 700,
-    21: 800,
+    5: 399,
+    10: 499,
+    21: 499,
   });
   assert.deepEqual(resolveConfirmedRaceFees(updated), {
     5: 650,

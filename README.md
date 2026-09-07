@@ -1,75 +1,96 @@
-# Sekhon Marathon 2026 · Desert Braves
+# Sekhon Indian Air Force Marathon 2026 · Desert Braves
 
-**Air Force Station Suratgarh — The land of Sun and Sand.**
+**Air Force Station Suratgarh — The Land of Sun and Sand.**
 
-Website: https://reds-aviation.github.io/sekhonmarathon_suratgarh_2026/
-Repository: https://github.com/reds-aviation/sekhonmarathon_suratgarh_2026
+Public event guide: <https://reds-aviation.github.io/sekhonmarathon_suratgarh_2026/>
+Repository: <https://github.com/reds-aviation/sekhonmarathon_suratgarh_2026>
 
-Mobile-first event web app with a station-focused identity, original canal-community canvas artwork, source-checked Sekhon biography and historical running photographs, 5/10/21 KM selection, registration, participant race desk and protected organiser/timing/certificate modules. Built for GitHub Pages, with Supabase Auth/database/private screenshots and a private Google Drive organiser register.
+This project has two deliberately separate website targets:
 
-## Current launch state
+- **GitHub Pages** is the public guide. It carries the event story, race information, gallery, contact information and a link to the secure app. It contains no participant records, Supabase credentials or registration interface.
+- **Netlify** will host the authenticated event app. It is the only place for sign-in, station-code registration, payment screenshot upload, a participant’s own race desk and organiser operations.
 
-The public website is an event preview. Registration and payments are closed until the new Supabase project, mail delivery and Suratgarh payment details are configured. Preview mode does not submit records or upload screenshots. There are no real participants or payments in this repository.
+The public guide is currently live. The secure app is not yet activated because the final Netlify URL, Supabase project, real UPI details and organiser accounts have not been supplied. The payment QR shown in the preview is intentionally marked **YET TO UPDATE** and cannot receive a payment.
 
-Date: 4 October 2026, 05:00–10:00 IST. Registration deadline: 27 September 2026, 23:59:59 IST. Planned fees: 5 KM ₹600; 10 KM ₹700; 21 KM ₹800, subject to procurement confirmation before payments open. Organiser-managed clocks and finish recording replace RFID/chip timing. No caps. Audience: airwarriors and families, gated by verified email and a station invitation code.
+## Event facts
 
-## Local development and publication
+| Item | Confirmed detail |
+| --- | --- |
+| Race day | Sunday, 4 October 2026 |
+| Registration deadline | Sunday, 27 September 2026, 23:59 IST |
+| Audience | Airwarriors and their families, using a verified email sign-in and station invitation code |
+| 5 KM fee | ₹399 |
+| 10 KM fee | ₹499 |
+| 21 KM fee | ₹499 |
+| T-shirt collection | Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station |
+| Contact | 8838463776 · 7027964880 |
+| Route | To be published after station approval |
 
-Use Node 24 and pnpm 11. `pnpm install`, `pnpm dev`, `pnpm typecheck`, `pnpm test`, `pnpm build`. The production frontend is a Vite static build in `dist/`, with the repository subpath configured in `vite.pages.config.ts`. Publish only `dist/` to the `gh-pages` branch, with `.nojekyll`, and configure GitHub Pages to deploy that branch's root.
+Race timing, route geometry, registration opening and payment acceptance all remain closed until their operational inputs are approved. A participant can never use the preview QR as proof of payment.
 
-`app/page.tsx` holds public event content; `app/station-theme.css` the current design; `app/mobile-polish.css` retains shared registration styles; `components/registration.tsx` the registration flow. Update Suratgarh routes in the Race day section after finalisation. Original starter modules are retained; the production entry is `app/client.tsx` and the build uses `vite.pages.config.ts`.
+## How private data is protected
 
-Public environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Copy `.env.example` to `.env.local` after creating the database. These are browser-safe values. Service-role, SMTP and integration secrets must never use a public prefix or enter this repository.
+The authenticated app uses Supabase Auth, a private PostgreSQL data store and private Supabase Storage.
 
-## Connect the new Supabase project
+- A participant can view only their own registration and payment status.
+- Payment screenshots stay in the private `payment-receipts` bucket. They have no public URL.
+- A reviewer must use a verified email and multi-factor authentication at **AAL2**. Their access is granted explicitly for an event capability such as `payment_reviewer`, `tshirt_desk`, `completion_desk`, `route_publisher` or `event_admin`.
+- Capability grants, payment-review decisions and private-proof access are audited with an actor, request ID, server time and revision.
+- Payment evidence is kept as an immutable attempt ledger. Every review is revision-checked and idempotent, so a retry cannot create a second decision.
+- A receipt viewer must obtain a short-lived server-signed link after database authorisation. Storage paths and service-role keys never enter the browser bundle.
+- A rejected payment is corrected only by its verified, invited owner. The original proof and review remain on record; a fresh UTR and private screenshot create a new `pending_review` attempt. A correction cannot overwrite an earlier proof or reuse a UTR.
+- Physical T-shirt handover is recorded in a separate, audited issue ledger. The desk can issue only to a registration whose payment summary **and** a verified payment attempt agree. An administrator can void an issue only with its current revision and a recorded reason.
 
-1. Create the project in your Supabase account. Run all numbered files in `supabase/migrations` in order as the project owner. The new event-day migrations deliberately keep registration and payment flags closed. They create event/race configuration, private membership and invitation records, private registrations and a private `payment-receipts` bucket.
-2. Enable email sign-up and confirmation; disable anonymous sign-ins. Configure your SMTP provider. In the sign-in email template, include `{{ .Token }}` for the numeric email code. Set the Site URL and allowed redirect URL to `https://reds-aviation.github.io/sekhonmarathon_suratgarh_2026/`. Supabase's default email service is restricted and is not a production mail service.
-3. Deploy `submit-registration`. `verify_jwt=false` is deliberate: the function explicitly verifies every caller using Supabase Auth `getUser`, then checks station membership. It does not accept unauthenticated registrations. `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are backend runtime values; set `SITE_ORIGIN=https://reds-aviation.github.io`.
-4. Generate the station code using the commented owner-only setup command in migration 2. Distribute it through station channels. Only the hash is stored; no code is embedded in the website. Revoke or rotate codes and memberships through the private administration tables.
-5. Add Suratgarh's QR URL, payee name, UPI ID and event contact details to `event_config`. Set `payment_configured=true` and `registration_open=true` only when these are correct. The database enforces the deadline independently of the browser.
-6. Set the two public frontend configuration values, rebuild and republish. Test live email sign-in, invalid/valid station code, a real test screenshot in the new test environment, duplicate submission, separate account privacy, and the Drive import before inviting participants.
+The confirmed payment workflow is: select a race → sign in and use the station invitation code → enter the real UPI reference and upload a screenshot → receive `pending_review` status → an authorised organiser checks it against the bank/UPI record → receive `verified` or `rejected` status. If rejected, the participant supplies a new reference and replacement screenshot from their own entry; the system creates a new immutable attempt for review while retaining the rejected attempt. A screenshot is evidence only; it does not approve a payment automatically.
 
-Payment submission always begins as `pending_review`. A screenshot is supporting evidence, not an automatic payment confirmation. Database triggers calculate the trusted fee, canonicalise the email/transaction reference and prevent clients from assigning approval. Receipt paths are private. Retry IDs persist for the browser tab without saving personal details; signed-in users can see their own submitted entries.
+## Google Drive and Google Sheets
 
-## Private Google Drive register
+The organiser’s Google Sheet is a **one-way operational mirror** of the secure app. It is useful for private totals, payment follow-up, T-shirt-size planning and distribution reporting, but it is never the payment decision system.
 
-The prepared workbook contains `Participants!A:X`, Summary and Read me. It supports 5,000 entries and includes race/fee summaries, verified T-shirt size totals, payment review, BIB numbers and BIB/T-shirt distribution tracking. No sample runners are included. Drive import/authentication must be completed before live synchronization.
+- The app database remains the source of truth for registrations, evidence and payment status.
+- A server-authorised sync exports changed payment-attempt revisions and upserts the private organiser Sheet by Registration ID. The current receipt copy is authorised by its payment-attempt ID, so a correction never mutates an earlier private proof.
+- Changes made in Sheets must not approve, reject or otherwise change a participant’s record in Supabase.
+- Keep the Sheet and receipt folder private to authorised organisers. Do not enable link sharing or place participant data in the public GitHub repository.
 
-To connect a native Google Sheet:
+The deployed mirror accepts only HMAC-signed, timestamped, single-use requests from the private Apps Script. It rejects browser origins and replayed requests. Screenshots are copied through a 60-second server-signed URL into the private Drive folder; their Storage paths never reach the Sheet or a browser. A correction uses a different payment-attempt ID, so its receipt copy stays separate from the prior proof. Configure the Supabase `DRIVE_MIRROR_HMAC_SECRET` and the matching Apps Script property separately, with at least 32 characters.
 
-1. Bind `integrations/google-drive/Code.gs` to the organiser Sheet using Extensions → Apps Script; use the accompanying manifest. Set script properties `SPREADSHEET_ID`, `RECEIPTS_FOLDER_ID`, `SUPABASE_DRIVE_ENDPOINT`, `DRIVE_SYNC_TOKEN`.
-2. Deploy the `drive-register` Edge Function. Generate a long random dedicated `DRIVE_SYNC_TOKEN` (32+ random characters) and store the same secret in Supabase function secrets and Apps Script properties. It grants the integration access to participant records, screenshot copies and review publication; never expose it in the frontend, Sheet cells, or logs.
-3. Sign the organiser into Supabase once, assign the verified Auth UUID in the private organizer table, and configure `DRIVE_ORGANIZER_USER_ID` as the function secret. This server-managed identity is required to publish payment reviews.
-4. Authorise the Apps Script scopes in your Google account. The private receipts folder must have no link-wide sharing. Run **Desert Braves → Import new registrations**. It copies screenshots to Drive and inserts new participant rows. Existing Q:X review/distribution fields are preserved.
-5. After checking the bank/UPI record, set Payment status to `verified` or `rejected`, enter Verified by, and optionally Review note. Leave Verified at empty. Use **Publish reviewed payments** to send those decisions to the app; the backend stamps Verified at. Merely editing the Sheet does not change the website until publication succeeds.
-6. Optionally enable 10-minute imports through the menu. New entries then import automatically; payment decisions remain an explicit organiser action. No scheduled sync has been enabled by this repository.
+## Local development
 
-The integration neutralises spreadsheet-formula injection in user-supplied text, paginates exports, stores screenshots in a private folder, uses short-lived download URLs, and never publishes participant details in GitHub Pages. Keep register editing access restricted to authorised organisers.
+Use Node 24 and pnpm 11.
 
-## Verification
+```text
+pnpm install
+pnpm dev
+pnpm typecheck
+pnpm test
+pnpm run build:pages
+pnpm run build:app
+```
 
-- TypeScript check and production static build.
-- `pnpm test` covers participant/receipt validation, availability/deadline boundaries, timing parsing/provenance, real PostgreSQL/RLS/RPC lifecycle tests, private certificate approval/versioning and PDF rendering with Latin/Devanagari fonts. Fixtures use synthetic records and signatures only; this is not a deployed Auth/Storage end-to-end test.
-- Twenty-three local PostgreSQL/PGlite schema/RLS/RPC checks (report in `docs/database-validation.json`). Auth/Storage service tables were stubbed for these checks; live integration remains to be verified after account setup.
-- Original artwork sources in `docs/asset-sources.md`.
+`pnpm dev` starts the authenticated-app target. `pnpm run dev:pages` starts the public-guide target. `pnpm run verify:targets` builds both targets and confirms that the Pages output does not contain private registration or Supabase code.
 
-Do not delete uploaded receipt objects in the request path after an uncertain database response: another concurrent request may reference the file. Any later cleanup must examine old unreferenced objects through the Storage API, with no in-progress submissions.
+Copy `.env.example` to `.env.local` for local work. `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are browser-safe only for the Netlify app target. Never put a service-role key, SMTP credential, Drive secret or deployment token in a `VITE_` variable or source file. `SITE_ORIGIN` belongs in the Supabase Edge Function secret store, not the browser build; it must be the one final HTTPS Netlify origin with no path, query or fragment.
 
-## Race desk, organiser console and certificates
+## Activation sequence
 
-The new lazy-loaded `components/event-portal.tsx` exposes participant entries/results/certificates, organiser payment review, category clocks, finish capture, result review and public minimal certificate verification. See [event-day setup and operating limits](docs/event-day-platform.md). Database authority and private assets remain on Supabase; the static page cannot act as an administrator.
+1. Create a new Supabase project and apply migrations `001` through `014` in order to a staging project first, then production. Migrations `012`, `013` and `014` add the T-shirt issue ledger, immutable rejected-payment correction, and capability-gated race-day completion workflow. They keep collection and completion closed unless explicitly enabled.
+2. Create the final Netlify site, then configure verified email sign-in, disable anonymous sign-in and configure production mail delivery. Set the Supabase Site URL and allowed redirect URLs to the final HTTPS **Netlify app** address, not the GitHub Pages guide.
+3. Set `VITE_APP_URL`, `VITE_AUTH_REDIRECT_URL`, `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the protected Netlify/GitHub production environment. The Pages build must receive the final Netlify URL only for its secure-app handoff.
+4. Before deploying browser-facing functions, set Supabase Edge Function `SITE_ORIGIN` to exactly that single HTTPS Netlify origin, for example `https://marathon.example.net`. It must have no path, query, fragment, credentials or wildcard. Do not use the Pages URL or a localhost URL. Set `DRIVE_MIRROR_HMAC_SECRET` separately in Supabase and the private Apps Script.
+5. Deploy the function set after migrations: `submit-registration`, `correct-payment`, `organiser-payment-proof`, `drive-register` and `certificate`. Rehearse the functions with staging identities before configuring the private Drive mirror. The function runtime service-role key stays only in Supabase; it is never a browser or Netlify `VITE_` value.
+6. Create the station invitation-code process and grant organiser capabilities only to confirmed organiser accounts. Enrol organisers in MFA before enabling any organiser capability. There is no self-enrolment path for organisers.
+7. Create the private Sheet and receipt folder, set the Apps Script properties, and test a one-way synthetic sync. Test participant isolation, short-lived proof access, duplicate UTR rejection, rejected-payment correction, review audit records, T-shirt issue/void audit records and Sheets updates.
+8. Supply the final payee name, UPI ID and QR image. Update `event_config` only after the QR has been independently checked. Then set `payment_configured=true` and `registration_open=true` together through the approved owner procedure.
+9. Rehearse a full phone and laptop flow with non-production accounts: email sign-in, invitation code, registration, screenshot upload, correction after rejection, organiser review, T-shirt collection and void recovery, completion-desk enablement, results review and certificate access. Only then invite participants.
 
-Official times take precedence over participant submissions. Self-reported times cannot determine prizes. Reviews require the expected result revision, certificate holds persist until explicitly released, and signature approvals are versioned. Generated PDFs use a visual signature facsimile, not a cryptographic digital signature; no AOC identity or signature has been invented.
+## Race-day and collection operation
 
-## Mobile installation and later Android release
+The app is designed for organiser-managed clocks and finish records; it does not claim chip timing. The final route should be published as an approved visual timeline only after route details, control points and reporting guidance are confirmed. Race-day completion is disabled by default. It requires both approved timing and completion-desk settings, an AAL2 `completion_desk` capability, a verified payment, an idempotent request and the current result revision. An AAL2 `event_admin` separately reviews or locks a recorded result before certificate release.
 
-The manifest and production worker provide home-screen installation metadata and a public offline information page. Private records, authentication, receipts, certificates and registration pages are never cached by that worker. Read [the mobile roadmap](docs/mobile-app-roadmap.md) for Android/iPhone installation and the later signed Android/store release. Physical device and store-release checks are still required.
+For collection, organisers will work from the private, verified-payment list and record the requested/issued T-shirt size at the designated desk on 3 October. This must remain an authenticated organiser action, with an audit trail and a clear exception note for any size change.
 
-## Design and procurement
+See [event-day operations](docs/event-day-platform.md) for authority boundaries and activation checks, and [the station platform plan](docs/2026-09-station-platform-plan.md) for the delivery sequence.
 
-The station brief supersedes earlier caps/chip-timing and ₹399/₹899 package assumptions. The latest design follows a navy/ivory/canal-green palette with measured text contrast. Historical photographs have year/location/source captions; the painting is a fictional impression of a thriving station community. Asset provenance is in [asset-sources](docs/asset-sources.md).
+## Validation limits
 
-The latest reference study, design direction, shipped improvements and pre-launch priorities are recorded in [the website design intelligence review](docs/design-intelligence-review.md).
-
-The separate organiser budget calculator models 100–500 runners, planned ₹600/₹700/₹800 fees, ₹300 shirts, ₹150 medals, food alternatives and 5/10/15% contingency. These are planning allowances, not supplier commitments. The ₹20,000 seed is kept separate from earned registration revenue. Confirm supplier lead times early; the seven days between registration close and race day are not sufficient for many custom orders.
+The repository’s automated checks cover target separation, registration data rules, access controls and payment-review behaviour using synthetic records. They do not prove a live Supabase, Netlify, email, UPI, Google Drive, Android, iPhone or physical finish-line workflow. Those systems require staging rehearsal and final operator approval before launch.

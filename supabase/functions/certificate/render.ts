@@ -1,6 +1,8 @@
 import { PDFDocument, rgb } from 'pdf-lib';
+// @deno-types="./regenerator-runtime.d.ts"
 import 'regenerator-runtime/runtime.js';
 import fontkit from '@pdf-lib/fontkit';
+// @deno-types="npm:@types/qrcode@1.5.6"
 import QRCode from 'qrcode';
 
 export type CertificateSnapshot = { participant_name:string;registration_number:string;race:string;event_date:string;elapsed_seconds:number;timing_provenance:string;signer_name:string;signer_designation:string;event_title:string;organiser:string };

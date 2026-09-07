@@ -3,20 +3,17 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
-const canonical =
-  'https://reds-aviation.github.io/sekhonmarathon_suratgarh_2026/';
-
-test('shared links identify the current Suratgarh event without overstating registration', async () => {
+void test('shared links identify the current Suratgarh event without overstating registration', async () => {
   const html = await readFile(new URL('index.html', root), 'utf8');
   const compactHtml = html.replaceAll(/\s+/g, ' ');
 
   assert.match(
     compactHtml,
-    new RegExp(`<link rel="canonical" href="${canonical}"`),
+    /<link rel="canonical" href="__SITE_URL__"/,
   );
   assert.match(
     compactHtml,
-    new RegExp(`<meta property="og:url" content="${canonical}"`),
+    /<meta property="og:url" content="__SITE_URL__"/,
   );
   assert.match(
     compactHtml,
@@ -32,18 +29,18 @@ test('shared links identify the current Suratgarh event without overstating regi
   assert.equal(schema['@type'], 'SportsEvent');
   assert.equal(schema.startDate, '2026-10-04T05:00:00+05:30');
   assert.equal(schema.location.name, 'Air Force Station Suratgarh');
+  assert.equal(schema.url, '__SITE_URL__');
 });
 
-test('installed-app shortcuts and calendar downloads retain the confirmed event details', async () => {
+void test('installed-app shortcuts and calendar downloads retain the confirmed event details', async () => {
   const manifest = JSON.parse(
     await readFile(new URL('public/manifest.webmanifest', root), 'utf8'),
   );
   assert.deepEqual(
     manifest.shortcuts.map(({ url }) => url),
     [
-      '/sekhonmarathon_suratgarh_2026/#races',
-      '/sekhonmarathon_suratgarh_2026/#guide',
-      '/sekhonmarathon_suratgarh_2026/#race-desk',
+      './#races',
+      './#guide',
     ],
   );
 

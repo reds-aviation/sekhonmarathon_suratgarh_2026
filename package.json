@@ -6,13 +6,21 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vite --config vite.pages.config.ts",
-    "build": "vite build --config vite.pages.config.ts",
-    "start": "vite preview --config vite.pages.config.ts",
+    "dev": "pnpm run dev:app",
+    "dev:pages": "node ./node_modules/vite/bin/vite.js --config vite.pages.config.ts --mode pages",
+    "dev:app": "node ./node_modules/vite/bin/vite.js --config vite.pages.config.ts --mode app",
+    "build": "pnpm run build:app",
+    "build:pages": "node ./node_modules/vite/bin/vite.js build --config vite.pages.config.ts --mode pages",
+    "build:app": "node ./node_modules/vite/bin/vite.js build --config vite.pages.config.ts --mode app",
+    "verify:targets": "pnpm run build:pages && pnpm run build:app && pnpm run test:targets",
+    "start": "node ./node_modules/vite/bin/vite.js preview --config vite.pages.config.ts --mode app",
     "test": "node --test tests/*.test.mjs",
-    "typecheck": "tsc --noEmit",
-    "lint": "oxlint",
-    "format": "oxfmt"
+    "test:targets": "node --test tests/build-targets.test.mjs",
+    "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
+    "lint": "node ./node_modules/oxlint/bin/oxlint",
+    "lint:platform": "node ./node_modules/oxlint/bin/oxlint app/page.tsx app/client.tsx app/pwa.ts vite.pages.config.ts lib/race-data.ts lib/registration-contract.ts tests/build-targets.test.mjs tests/event-discovery.test.mjs tests/event-day-sql.test.mjs tests/pwa.test.mjs tests/no-bib-language.test.mjs tests/organiser-roles.test.mjs tests/payment-attempts.test.mjs tests/race-data.test.mjs tests/registration-contract.test.mjs",
+    "format": "node ./node_modules/oxfmt/bin/oxfmt",
+    "functions:check": "pnpm dlx deno@2.3.3 check --config supabase/functions/certificate/deno.json supabase/functions/submit-registration/index.ts supabase/functions/correct-payment/index.ts supabase/functions/drive-register/index.ts supabase/functions/certificate/index.ts supabase/functions/organiser-payment-proof/index.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
@@ -44,6 +52,7 @@
     "@pdf-lib/fontkit": "1.1.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
+    "@types/qrcode": "1.5.6",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",

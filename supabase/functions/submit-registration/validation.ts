@@ -16,9 +16,29 @@ export function validatePayload(raw: Record<string,unknown>, today=new Date(Date
  if(!/^[A-Za-z0-9-]{6,64}$/.test(clean.transaction_id))throw new Error('Enter a valid transaction reference.');
  return {...clean,transaction_id:clean.transaction_id.toLowerCase(),event_id:EVENT_ID,submission_id:raw.submission_id.toLowerCase(),consent:true};
 }
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export function validatePaymentCorrectionPayload(raw: Record<string,unknown>) {
+ const registrationId=typeof raw.registration_id==='string'?raw.registration_id.trim():'';
+ const correctionId=typeof raw.correction_id==='string'?raw.correction_id.trim():'';
+ const transactionId=typeof raw.transaction_id==='string'?raw.transaction_id.trim():'';
+ if(raw.event_id!==EVENT_ID)throw new Error('This event is not available.');
+ if(!UUID.test(registrationId))throw new Error('Invalid registration reference.');
+ if(!UUID.test(correctionId))throw new Error('Invalid correction reference. Please try again.');
+ if(!/^[A-Za-z0-9-]{6,64}$/.test(transactionId))throw new Error('Enter a valid transaction reference.');
+ return {
+  event_id:EVENT_ID,
+  registration_id:registrationId.toLowerCase(),
+  correction_id:correctionId.toLowerCase(),
+  transaction_id:transactionId.toLowerCase(),
+ };
+}
 export function receiptExtension(bytes:Uint8Array,mime:string) {
  if(bytes.length===0||bytes.length>MAX_RECEIPT_BYTES)throw new Error('Your screenshot must be no larger than 5 MB.');
  if(mime==='image/jpeg'&&bytes.length>3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)return 'jpg';
  if(mime==='image/png'&&bytes.length>24&&[137,80,78,71,13,10,26,10].every((v,i)=>bytes[i]===v))return 'png';
  throw new Error('Upload a valid JPG or PNG payment screenshot.');
+}
+export async function receiptDigestSha256(bytes:Uint8Array) {
+ const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
+ return Array.from(digest,value=>value.toString(16).padStart(2,'0')).join('');
 }

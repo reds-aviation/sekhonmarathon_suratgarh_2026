@@ -176,6 +176,15 @@ export function Registration({
     [entriesLoading, setEntriesLoading] = useState(false),
     [entriesError, setEntriesError] = useState(''),
     [entriesRevision, setEntriesRevision] = useState(0);
+  const [correctionEntryId, setCorrectionEntryId] = useState<string | null>(
+      null,
+    ),
+    [correctionTransactionId, setCorrectionTransactionId] = useState(''),
+    [correctionFile, setCorrectionFile] = useState<File | null>(null),
+    [correctionBusy, setCorrectionBusy] = useState(false),
+    [correctionError, setCorrectionError] = useState(''),
+    [correctionMessage, setCorrectionMessage] = useState('');
+  const correctionRequestId = useRef<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const errorMessage = useRef<HTMLParagraphElement>(null);
   const active = availability === 'open';
@@ -576,6 +585,99 @@ export function Registration({
     setFile(selected);
   }
 
+  function resetPaymentCorrection() {
+    correctionRequestId.current = null;
+    setCorrectionEntryId(null);
+    setCorrectionTransactionId('');
+    setCorrectionFile(null);
+    setCorrectionError('');
+  }
+
+  function beginPaymentCorrection(entryId: string) {
+    resetPaymentCorrection();
+    setCorrectionMessage('');
+    setCorrectionEntryId(entryId);
+  }
+
+  function selectCorrectionFile(selected: File | undefined) {
+    setCorrectionError('');
+    correctionRequestId.current = null;
+    if (!selected) {
+      setCorrectionFile(null);
+      return;
+    }
+    if (
+      !['image/jpeg', 'image/png'].includes(selected.type) ||
+      selected.size > 5 * 1024 * 1024 ||
+      selected.size === 0
+    ) {
+      setCorrectionFile(null);
+      setCorrectionError('Choose a JPG or PNG screenshot, no larger than 5 MB.');
+      return;
+    }
+    setCorrectionFile(selected);
+  }
+
+  async function submitPaymentCorrection(event: FormEvent, entry: Entry) {
+    event.preventDefault();
+    if (!supabase || !user || !correctionFile) return;
+    const transactionId = correctionTransactionId.trim();
+    if (!/^[A-Za-z0-9-]{6,64}$/.test(transactionId)) {
+      setCorrectionError('Enter the payment reference shown in your UPI app.');
+      return;
+    }
+
+    const requestId = correctionRequestId.current || crypto.randomUUID();
+    correctionRequestId.current = requestId;
+    setCorrectionBusy(true);
+    setCorrectionError('');
+    setCorrectionMessage('');
+    try {
+      const body = new FormData();
+      body.set(
+        'payload',
+        JSON.stringify({
+          event_id: eventId,
+          registration_id: entry.id,
+          correction_id: requestId,
+          transaction_id: transactionId,
+        }),
+      );
+      body.set('receipt', correctionFile);
+      const { data, error: submitError } = await supabase.functions.invoke(
+        'correct-payment',
+        { body },
+      );
+      if (submitError) {
+        let explanation =
+          'We could not save the replacement proof. Please retry without making another payment.';
+        try {
+          const response = await submitError.context?.json();
+          if (response?.error) explanation = response.error;
+        } catch {}
+        throw new Error(explanation);
+      }
+      if (data?.payment_status !== 'pending_review') {
+        throw new Error(
+          'The replacement proof could not be confirmed. Please retry without making another payment.',
+        );
+      }
+      setCorrectionMessage(
+        'Replacement payment proof received. It is now awaiting organiser verification.',
+      );
+      resetPaymentCorrection();
+      setEntriesRevision((current) => current + 1);
+    } catch (failure) {
+      setCorrectionError(
+        failure instanceof Error
+          ? failure.message
+          : 'We could not save the replacement proof. Please retry.',
+      );
+    } finally {
+      setCorrectionBusy(false);
+    }
+  }
+
   async function submit() {
     if (preview || !supabase || !user || !active || !consent || !file) return;
     setBusy(true);
@@ -849,7 +951,7 @@ export function Registration({
                   ? confirmedFees
                     ? 'Confirmed fees.'
                     : 'Fees unavailable. Payments are not open.'
-                  : 'Provisional fees. Payments are not open.'}
+                  : 'Confirmed event fees. Payment details are still being updated.'}
               </p>
             )}
             {statusMode ? (
@@ -974,7 +1076,7 @@ export function Registration({
                   'Full name',
                   'text',
                   'name',
-                  'Name for your bib and certificate',
+                  'Name for your event record and certificate',
                 ],
                 [
                   'mobile',
@@ -1381,7 +1483,7 @@ export function Registration({
               {result.payment_status === 'verified'
                 ? `Your ${chosen} KM entry is confirmed. Payment verified.`
                 : result.payment_status === 'rejected'
-                  ? 'Your entry was received, but your payment could not be verified. Contact the organising team with your receipt and registration reference.'
+                  ? 'Your entry was received, but the payment could not be verified. Open your entries to submit a corrected payment reference and screenshot.'
                   : `Your ${chosen} KM entry awaits payment verification. The organising team will confirm it after review.`}
             </p>
             <div>
@@ -1457,13 +1559,98 @@ export function Registration({
                     <code>{entry.id}</code>
                   </div>
                   {entry.payment_status === 'rejected' && (
-                    <p className="entry-support">
-                      Please call <OrganiserContacts /> with this reference
-                      before making another payment.
-                    </p>
+                    <div className="entry-support">
+                      <p>
+                        The original proof could not be verified. If you have a
+                        corrected payment reference and a new screenshot, submit
+                        replacement proof below. Your original proof remains on
+                        record.
+                      </p>
+                      {correctionEntryId === entry.id ? (
+                        <form
+                          className="payment-correction"
+                          onSubmit={(event) =>
+                            void submitPaymentCorrection(event, entry)
+                          }
+                        >
+                          <label>
+                            New UPI payment reference
+                            <input
+                              autoComplete="off"
+                              disabled={correctionBusy}
+                              inputMode="text"
+                              maxLength={64}
+                              onChange={(event) => {
+                                correctionRequestId.current = null;
+                                setCorrectionTransactionId(event.target.value);
+                              }}
+                              placeholder="Reference from your UPI app"
+                              required
+                              value={correctionTransactionId}
+                            />
+                          </label>
+                          <label className="upload-zone" htmlFor={`replacement-proof-${entry.id}`}>
+                            <UploadCloud size={25} />
+                            <b>
+                              {correctionFile
+                                ? correctionFile.name
+                                : 'Add a new payment screenshot'}
+                            </b>
+                            <span>JPG or PNG · maximum 5 MB</span>
+                            <input
+                              accept="image/jpeg,image/png"
+                              disabled={correctionBusy}
+                              id={`replacement-proof-${entry.id}`}
+                              onChange={(event) =>
+                                selectCorrectionFile(event.target.files?.[0])
+                              }
+                              required
+                              type="file"
+                            />
+                          </label>
+                          {correctionError && (
+                            <p className="form-error" role="alert">
+                              {correctionError}
+                            </p>
+                          )}
+                          <p className="payment-correction-note">
+                            Do not make another payment just to retry this form.
+                          </p>
+                          <div className="payment-correction-actions">
+                            <button
+                              className="button"
+                              disabled={correctionBusy || !correctionFile}
+                            >
+                              Submit replacement proof {correctionBusy ? <LoaderCircle className="spin" size={17} /> : <ArrowRight size={17} />}
+                            </button>
+                            <button
+                              className="plain-button"
+                              disabled={correctionBusy}
+                              onClick={resetPaymentCorrection}
+                              type="button"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <button
+                          className="plain-button entry-correction-trigger"
+                          onClick={() => beginPaymentCorrection(entry.id)}
+                          type="button"
+                        >
+                          Update payment proof <ArrowRight size={16} />
+                        </button>
+                      )}
+                    </div>
                   )}
                 </article>
               ))
+            )}
+            {correctionMessage && (
+              <p className="form-message" role="status">
+                {correctionMessage}
+              </p>
             )}
             {entries.length > 0 && !entriesLoading && !entriesError && (
               <p className="privacy-hint">

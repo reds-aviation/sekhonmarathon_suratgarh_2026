@@ -1,0 +1,365 @@
+.race-completion-desk {
+  --completion-ink: #112f3c;
+  --completion-muted: #5d7474;
+  --completion-line: #d8e2df;
+  --completion-paper: #fffdf8;
+  --completion-teal: #176d63;
+  --completion-teal-dark: #0b4c47;
+  --completion-rust: #a34d2c;
+  --completion-pale-teal: #e7f2ef;
+  --completion-pale-rust: #fff2ed;
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: clamp(20px, 4vw, 42px);
+  border: 1px solid var(--completion-line);
+  border-radius: 20px;
+  background: var(--completion-paper);
+  color: var(--completion-ink);
+  box-shadow: 0 16px 42px rgba(16, 47, 59, 0.08);
+  font-family: 'Public Sans', Arial, sans-serif;
+}
+
+.race-completion-desk *,
+.race-completion-desk *::before,
+.race-completion-desk *::after { box-sizing: border-box; }
+
+.race-completion-desk button,
+.race-completion-desk input,
+.race-completion-desk select,
+.race-completion-desk textarea { font: inherit; }
+
+.race-completion-desk button,
+.race-completion-desk a { -webkit-tap-highlight-color: transparent; }
+
+.race-completion-desk button:focus-visible,
+.race-completion-desk input:focus-visible,
+.race-completion-desk select:focus-visible,
+.race-completion-desk textarea:focus-visible {
+  outline: 3px solid #d28b42;
+  outline-offset: 3px;
+}
+
+.race-completion-desk__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--completion-line);
+}
+
+.race-completion-desk__eyebrow,
+.race-completion-desk__record-head span {
+  display: block;
+  color: var(--completion-teal);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.race-completion-desk__header h2 {
+  margin: 5px 0 7px;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.race-completion-desk__header p,
+.race-completion-desk__notice p,
+.race-completion-desk__signin p,
+.race-completion-desk__empty p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--completion-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.race-completion-desk__signout,
+.race-completion-desk__refresh,
+.race-completion-desk__signin-row button,
+.race-completion-desk__row-action button,
+.race-completion-desk__record-head button,
+.race-completion-desk__record-finish,
+.race-completion-desk__review-result,
+.race-completion-desk__more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 1.2;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.race-completion-desk__signout,
+.race-completion-desk__refresh,
+.race-completion-desk__record-head button,
+.race-completion-desk__more {
+  min-height: 40px;
+  padding: 10px 13px;
+  border: 1px solid #b9c9c3;
+  background: #fff;
+  color: var(--completion-ink);
+}
+
+.race-completion-desk__signout:hover,
+.race-completion-desk__refresh:hover,
+.race-completion-desk__record-head button:hover,
+.race-completion-desk__more:hover { background: #f0f5f3; }
+
+.race-completion-desk__notice,
+.race-completion-desk__loading,
+.race-completion-desk__signin,
+.race-completion-desk__identity,
+.race-completion-desk__error,
+.race-completion-desk__empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-top: 20px;
+  border-radius: 12px;
+}
+
+.race-completion-desk__notice {
+  padding: 17px;
+  border: 1px solid #d6dfdb;
+  background: #f4f7f5;
+}
+
+.race-completion-desk__notice svg { flex: 0 0 auto; color: var(--completion-teal); margin-top: 2px; }
+.race-completion-desk__notice strong { display: block; margin-bottom: 3px; font-size: 14px; }
+
+.race-completion-desk__loading {
+  align-items: center;
+  padding: 27px 0;
+  color: var(--completion-muted);
+  font-size: 14px;
+}
+
+.race-completion-desk__signin {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid #c9dad5;
+  background: linear-gradient(135deg, #edf7f4, #fbfaf3);
+}
+
+.race-completion-desk__signin > svg { grid-row: span 2; color: var(--completion-teal); }
+.race-completion-desk__signin h3 { margin: 0 0 4px; font-size: 20px; letter-spacing: -0.03em; }
+.race-completion-desk__signin label { grid-column: 1 / -1; margin-top: 14px; color: var(--completion-ink); font-size: 12px; font-weight: 720; }
+.race-completion-desk__signin-row { display: flex; grid-column: 1 / -1; gap: 9px; }
+
+.race-completion-desk__signin-row input,
+.race-completion-desk__filters select,
+.race-completion-desk__record-fields input,
+.race-completion-desk__record-fields select,
+.race-completion-desk__note textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #b9cbc5;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--completion-ink);
+}
+
+.race-completion-desk__signin-row input { min-height: 46px; padding: 11px 13px; }
+.race-completion-desk__signin-row button,
+.race-completion-desk__record-finish { min-height: 46px; padding: 11px 17px; background: var(--completion-teal); color: #fff; white-space: nowrap; }
+.race-completion-desk__signin-row button:hover,
+.race-completion-desk__record-finish:hover { background: var(--completion-teal-dark); }
+.race-completion-desk__signin output { grid-column: 1 / -1; color: var(--completion-muted); font-size: 12px; line-height: 1.5; }
+
+.race-completion-desk__identity {
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border: 1px solid #c5ddd6;
+  background: var(--completion-pale-teal);
+  color: #1a4d48;
+  font-size: 13px;
+}
+
+.race-completion-desk__identity > svg { flex: 0 0 auto; }
+.race-completion-desk__identity strong { overflow-wrap: anywhere; }
+.race-completion-desk__access {
+  margin-left: auto;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #fff;
+  color: #476c65;
+  font-size: 11px;
+  font-weight: 700;
+}
+.race-completion-desk__access--allowed { color: #0e5a4e; }
+.race-completion-desk__access--denied { color: #9b4127; }
+
+.race-completion-desk__filters {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-top: 24px;
+}
+.race-completion-desk__filters label {
+  display: grid;
+  flex: 1 1 180px;
+  gap: 6px;
+  color: var(--completion-muted);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.race-completion-desk__filters select { min-height: 42px; padding: 8px 10px; font-size: 14px; font-weight: 600; letter-spacing: normal; text-transform: none; }
+.race-completion-desk__refresh { min-height: 42px; white-space: nowrap; }
+
+.race-completion-desk__error {
+  padding: 13px 14px;
+  border: 1px solid #efc8be;
+  background: #fff3f0;
+  color: #8e3d29;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.race-completion-desk__error svg { flex: 0 0 auto; margin-top: 1px; }
+.race-completion-desk__live { display: block; min-height: 0; margin: 14px 0 0; color: #176050; font-size: 13px; font-weight: 650; }
+
+.race-completion-desk__queue { margin-top: 18px; border-top: 1px solid var(--completion-line); }
+.race-completion-desk__queue-head,
+.race-completion-desk__row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.3fr) 84px 105px minmax(135px, 0.9fr) minmax(125px, 0.8fr);
+  gap: 12px;
+  align-items: center;
+}
+.race-completion-desk__queue-head { padding: 11px 13px; color: var(--completion-muted); font-size: 10px; font-weight: 760; letter-spacing: 0.1em; text-transform: uppercase; }
+.race-completion-desk__row { position: relative; min-width: 0; padding: 15px 13px; border-top: 1px solid var(--completion-line); background: #fff; color: #26454d; font-size: 13px; }
+.race-completion-desk__row.is-selected { border-color: #91beb5; background: #fbfffd; }
+.race-completion-desk__runner { min-width: 0; }
+.race-completion-desk__runner strong { display: block; overflow-wrap: anywhere; color: var(--completion-ink); font-size: 14px; }
+.race-completion-desk__runner small { display: block; margin-top: 3px; color: var(--completion-muted); font-size: 11px; }
+.race-completion-desk__row [data-label] { min-width: 0; }
+
+.race-completion-desk__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+.race-completion-desk__status--unrecorded { background: #f0f2ef; color: #5e6d67; }
+.race-completion-desk__status--participant_submitted { background: #fff0d9; color: #855419; }
+.race-completion-desk__status--organiser_recorded { background: #e4f2ef; color: #176351; }
+.race-completion-desk__status--verified { background: #dff1ea; color: #0d5a4b; }
+.race-completion-desk__status--correction_required { background: #fff0eb; color: #9b4127; }
+.race-completion-desk__status--locked { background: #e8ebed; color: #3a4c55; }
+
+.race-completion-desk__row-action button {
+  min-height: 34px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #87aaa1;
+  background: #fff;
+  color: #17564f;
+}
+.race-completion-desk__row-action button:hover { border-color: var(--completion-teal); background: var(--completion-pale-teal); }
+.race-completion-desk__locked { display: inline-flex; align-items: center; gap: 5px; color: #42565a; font-size: 12px; font-weight: 700; }
+.race-completion-desk__review-pending { display: inline-block; color: var(--completion-muted); font-size: 12px; font-weight: 650; line-height: 1.35; }
+
+.race-completion-desk__record {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 14px;
+  margin: 4px 0 0;
+  padding: 18px;
+  border: 1px solid #b7d6ce;
+  border-radius: 11px;
+  background: #f1f9f6;
+}
+.race-completion-desk__record-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.race-completion-desk__record-head strong { display: block; margin-top: 3px; font-size: 16px; }
+.race-completion-desk__record-head button { min-height: 35px; padding: 8px 10px; }
+.race-completion-desk__record-fields { display: grid; grid-template-columns: minmax(150px, 0.75fr) minmax(150px, 0.75fr); gap: 12px; }
+.race-completion-desk__record-fields label { display: grid; gap: 6px; color: var(--completion-ink); font-size: 12px; font-weight: 740; }
+.race-completion-desk__record-fields input,
+.race-completion-desk__record-fields select { min-height: 42px; padding: 9px 11px; font-size: 13px; font-weight: 500; }
+.race-completion-desk__note { display: grid; gap: 7px; }
+.race-completion-desk__note span { color: var(--completion-ink); font-size: 12px; font-weight: 760; }
+.race-completion-desk__note em { color: var(--completion-rust); font-size: 11px; font-style: normal; font-weight: 600; }
+.race-completion-desk__note textarea { min-height: 82px; resize: vertical; padding: 10px 12px; font-size: 13px; line-height: 1.5; }
+.race-completion-desk__hold { display: inline-flex; align-items: center; gap: 9px; color: var(--completion-ink); font-size: 13px; font-weight: 650; }
+.race-completion-desk__hold input { width: 18px; height: 18px; accent-color: var(--completion-teal); }
+.race-completion-desk__record-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.race-completion-desk__record-finish,
+.race-completion-desk__review-result { min-height: 44px; padding: 11px 15px; }
+.race-completion-desk__review-result { border: 1px solid #176d63; background: #fff; color: #14574f; }
+.race-completion-desk__review-result:hover { background: #e7f3ef; }
+.race-completion-desk__record-actions button:disabled { cursor: not-allowed; opacity: 0.6; }
+.race-completion-desk__review-note { color: var(--completion-muted); font-size: 12px; line-height: 1.5; }
+
+.race-completion-desk__empty { padding: 28px 4px; color: var(--completion-muted); }
+.race-completion-desk__empty svg { flex: 0 0 auto; color: var(--completion-teal); }
+.race-completion-desk__empty strong { display: block; margin-bottom: 3px; color: var(--completion-ink); font-size: 14px; }
+.race-completion-desk__more { min-height: 41px; margin: 18px auto 0; padding: 10px 16px; }
+.race-completion-desk__spin { animation: race-completion-desk-spin 0.9s linear infinite; }
+@keyframes race-completion-desk-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 860px) {
+  .race-completion-desk__queue-head { display: none; }
+  .race-completion-desk__row { grid-template-columns: minmax(0, 1fr) 1fr; gap: 13px 16px; padding: 17px 0; }
+  .race-completion-desk__runner { grid-column: 1 / -1; }
+  .race-completion-desk__row [data-label] { display: grid; gap: 2px; }
+  .race-completion-desk__row [data-label]::before { color: var(--completion-muted); content: attr(data-label); font-size: 10px; font-weight: 760; letter-spacing: 0.08em; text-transform: uppercase; }
+  .race-completion-desk__row-action { grid-column: 1 / -1; }
+  .race-completion-desk__row-action button { width: auto; min-width: 145px; }
+  .race-completion-desk__record { margin-top: 0; }
+}
+
+@media (max-width: 620px) {
+  .race-completion-desk { width: 100%; margin: 0; padding: 21px 16px; border-right: 0; border-left: 0; border-radius: 0; }
+  .race-completion-desk__header { gap: 13px; }
+  .race-completion-desk__header h2 { font-size: 31px; }
+  .race-completion-desk__header p { font-size: 13px; }
+  .race-completion-desk__signout { min-width: 41px; padding: 10px; font-size: 0; }
+  .race-completion-desk__signout svg { margin: 0; }
+  .race-completion-desk__signin { display: block; }
+  .race-completion-desk__signin > svg { margin-bottom: 11px; }
+  .race-completion-desk__signin label { display: block; margin-top: 16px; }
+  .race-completion-desk__signin-row { display: grid; margin-top: 6px; }
+  .race-completion-desk__signin-row button { width: 100%; }
+  .race-completion-desk__signin output { display: block; margin-top: 10px; }
+  .race-completion-desk__identity { align-items: flex-start; }
+  .race-completion-desk__access { width: 100%; margin-left: 32px; }
+  .race-completion-desk__filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .race-completion-desk__refresh { grid-column: 1 / -1; width: 100%; }
+  .race-completion-desk__record { padding: 14px; }
+  .race-completion-desk__record-head { display: block; }
+  .race-completion-desk__record-head button { margin-top: 10px; }
+  .race-completion-desk__record-fields { grid-template-columns: 1fr; }
+  .race-completion-desk__record-actions { display: grid; }
+  .race-completion-desk__record-actions button { width: 100%; }
+}
+
+@media (max-width: 360px) {
+  .race-completion-desk__filters,
+  .race-completion-desk__row { grid-template-columns: 1fr; }
+  .race-completion-desk__header { display: block; }
+  .race-completion-desk__signout { width: 100%; margin-top: 14px; font-size: 13px; }
+  .race-completion-desk__signout svg { margin-right: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .race-completion-desk *,
+  .race-completion-desk *::before,
+  .race-completion-desk *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+  .race-completion-desk__spin { animation-duration: 0.01ms; animation-iteration-count: 1; }
+}

@@ -3,9 +3,50 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
 
-test('event-day PostgreSQL permissions, timing authority and certificate lifecycle',async t=>{
+const confirmedFeeMigration = () => readFile(
+  new URL('../supabase/migrations/202609070006_confirmed_race_fees.sql', import.meta.url),
+  'utf8',
+);
+
+async function confirmedFeeFixture({registrationOpen=false,races=[
+  ['5',60000],['10',70000],['21',80000],
+]}={}){
   const db=new PGlite();
-  const user='00000000-0000-4000-8000-000000000001', other='00000000-0000-4000-8000-000000000002', official='00000000-0000-4000-8000-000000000003';
+  await db.exec(`create table public.event_config(id text primary key,registration_open boolean not null);
+    create table public.race_config(event_id text not null,race text not null,fee_paise integer not null);
+    insert into public.event_config values('suratgarh-2026',${registrationOpen});`);
+  for(const [race,fee] of races) await db.query(
+    "insert into public.race_config(event_id,race,fee_paise) values('suratgarh-2026',$1,$2)",
+    [race,fee],
+  );
+  return db;
+}
+
+void test('confirmed fee migration fails closed before it can touch price rows',async t=>{
+  const migration=await confirmedFeeMigration();
+  await t.test('when registration is open',async()=>{
+    const db=await confirmedFeeFixture({registrationOpen:true});
+    await assert.rejects(()=>db.exec(migration),/registration is open/i);
+    await db.exec('rollback');
+    assert.deepEqual((await db.query("select race,fee_paise from public.race_config order by race")).rows,[
+      {race:'10',fee_paise:70000},{race:'21',fee_paise:80000},{race:'5',fee_paise:60000},
+    ]);
+    await db.close();
+  });
+  await t.test('when the Suratgarh categories are incomplete',async()=>{
+    const db=await confirmedFeeFixture({races:[['5',60000],['10',70000]]});
+    await assert.rejects(()=>db.exec(migration),/exactly the 5, 10 and 21 km categories/i);
+    await db.exec('rollback');
+    assert.deepEqual((await db.query("select race,fee_paise from public.race_config order by race")).rows,[
+      {race:'10',fee_paise:70000},{race:'5',fee_paise:60000},
+    ]);
+    await db.close();
+  });
+});
+
+void test('event-day PostgreSQL permissions, timing authority and certificate lifecycle',async t=>{
+  const db=new PGlite();
+  const user='00000000-0000-4000-8000-000000000001', other='00000000-0000-4000-8000-000000000002', official='00000000-0000-4000-8000-000000000003', historic='00000000-0000-4000-8000-000000000004';
   const q=(sql,args=[])=>db.query(sql,args);
   const scalar=async(sql,args=[])=>Object.values((await q(sql,args)).rows[0])[0];
   const as=async(role,id,fn)=>{await db.exec(`set role ${role}`);await q("select set_config('request.jwt.claim.sub',$1,false)",[id||'']);try{return await fn();}finally{await db.exec('reset role');await q("select set_config('request.jwt.claim.sub','',false)");}};
@@ -22,13 +63,30 @@ test('event-day PostgreSQL permissions, timing authority and certificate lifecyc
     grant usage on schema public,auth,storage to anon,authenticated,service_role;
     grant execute on function auth.uid(),storage.foldername(text) to anon,authenticated,service_role;
     grant select,insert,update,delete on storage.objects to authenticated,service_role;`);
-  for(const id of [user,other,official]) await q("insert into auth.users values($1,$2,now(),false)",[id,`${id}@example.test`]);
+  for(const id of [user,other,official,historic]) await q("insert into auth.users values($1,$2,now(),false)",[id,`${id}@example.test`]);
   for(const file of ['202609050001_marathon.sql','202609050002_organizer_setup.sql','202609050003_contacts.sql','202609050004_event_day.sql','202609050005_certificates.sql']) await db.exec(await readFile(new URL(`../supabase/migrations/${file}`,import.meta.url),'utf8'));
-  await t.test('extension defaults stay closed and prepared prices are ₹600/700/800',async()=>{
+  await t.test('pre-correction setup stays closed with the previous race prices',async()=>{
     assert.equal(await scalar('select registration_open or payment_configured from public.event_config'),false);
     assert.deepEqual((await q('select fee_paise from public.race_config order by fee_paise')).rows.map(r=>r.fee_paise),[60000,70000,80000]);
     assert.equal(await scalar('select timing_enabled or self_submission_open from marathon_private.event_day_settings'),false);
     assert.equal(await scalar('select enabled from marathon_private.certificate_settings'),false);
+  });
+  await q("update public.event_config set event_starts_at=now()+interval '2 days',registration_deadline=now()+interval '1 day',registration_open=true,payment_configured=true,payment_qr_url='https://example.test/qr.png',payee_name='Test organiser',upi_id='test@example'");
+  const historicInvitation=await scalar("insert into marathon_private.invitations(event_id,label,code_sha256,expires_at) values('suratgarh-2026','Historical test',repeat('b',64),now()+interval '1 day') returning id");
+  await q("insert into marathon_private.memberships(event_id,user_id,invitation_id) values('suratgarh-2026',$1,$2)",[historic,historicInvitation]);
+  const historicSubmission='10000000-0000-4000-8000-000000000000',historicPath=`${historic}/${historicSubmission}/receipt.png`;
+  await q("insert into storage.objects(bucket_id,name,metadata) values('payment-receipts',$1,'{\"size\":500,\"mimetype\":\"image/png\"}')",[historicPath]);
+  const historicRegistration=await scalar(`insert into public.registrations(user_id,submission_id,full_name,mobile,email,dob,gender,race,tshirt,blood_group,emergency_contact,city,participant_type,transaction_id,receipt_path,consent,fee_paise)
+    values($1,$2,'Historical fee snapshot','9123456789','placeholder@example.test','1990-01-01','male','5','M','O+','9234567890','Suratgarh','airwarrior','HIST-12345',$3,true,1) returning id`,[historic,historicSubmission,historicPath]);
+  const historicFee=await scalar('select fee_paise from public.registrations where id=$1',[historicRegistration]);
+  assert.equal(historicFee,60000);
+  await q("update public.event_config set registration_open=false where id='suratgarh-2026'");
+  await db.exec(await confirmedFeeMigration());
+  await t.test('confirmed fee migration updates the current price list but preserves registration snapshots',async()=>{
+    assert.deepEqual((await q('select race,fee_paise from public.race_config where event_id=$1 order by race',['suratgarh-2026'])).rows,[
+      {race:'10',fee_paise:49900},{race:'21',fee_paise:49900},{race:'5',fee_paise:39900},
+    ]);
+    assert.equal(await scalar('select fee_paise from public.registrations where id=$1',[historicRegistration]),historicFee);
   });
   await q("insert into marathon_private.organizers(event_id,user_id) values('suratgarh-2026',$1)",[official]);
   await q("update public.event_config set event_starts_at=now()+interval '2 days',registration_deadline=now()+interval '1 day',registration_open=true,payment_configured=true,payment_qr_url='https://example.test/qr.png',payee_name='Test organiser',upi_id='test@example'");

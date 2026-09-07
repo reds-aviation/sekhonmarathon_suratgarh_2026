@@ -1,0 +1,35 @@
+name: Verify public and app targets
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      U1_BUNDLE_SECRET_CANARY: u1-private-value-must-not-reach-browser-output
+      VITE_APP_URL: https://app.example.invalid/
+      VITE_AUTH_REDIRECT_URL: https://app.example.invalid/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm run lint:platform
+      - run: pnpm test
+      - run: pnpm run functions:check
+      - run: pnpm run build:pages
+      - run: pnpm run build:app
+      - run: pnpm run test:targets

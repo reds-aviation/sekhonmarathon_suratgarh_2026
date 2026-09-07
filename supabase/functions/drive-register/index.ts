@@ -1,44 +1,166 @@
-// Server-to-server integration. Never place DRIVE_SYNC_TOKEN in the website.
+// Private server-to-server organiser mirror. This endpoint intentionally sends
+// no CORS headers and accepts only short-lived HMAC-authenticated requests from
+// the standalone Google Apps Script integration.
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.115.0';
-const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
-const eventId='suratgarh-2026';
-const json=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
-async function tokenMatches(candidate:string){const secret=Deno.env.get('DRIVE_SYNC_TOKEN');if(!secret||secret.length<32)return false;const hash=async(s:string)=>new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)));const [a,b]=await Promise.all([hash(candidate),hash(secret)]);let difference=0;for(let i=0;i<a.length;i++)difference|=a[i]^b[i];return difference===0;}
-Deno.serve(async(req:Request)=>{
- if(req.method!=='POST')return json({error:'Method not allowed.'},405);
- const header=req.headers.get('Authorization')||'';
- if(!header.startsWith('Bearer ')||!await tokenMatches(header.slice(7)))return json({error:'Unauthorised.'},401);
- // No CORS headers: this endpoint is for the private Apps Script integration.
- if(Number(req.headers.get('Content-Length'))>8192)return json({error:'Request too large.'},413);
- let body;try{const raw=await req.text();if(raw.length>8192)return json({error:'Request too large.'},413);body=JSON.parse(raw);}catch{return json({error:'Invalid request.'},400);}
- if(body.action==='list'){
-  const cursor=typeof body.cursor==='string'?body.cursor:'';
-  if(cursor&&!/^[0-9a-f-]{36}$/i.test(cursor))return json({error:'Invalid cursor.'},400);
-  let query=admin.from('registrations').select('id,created_at,full_name,mobile,email,dob,gender,participant_type,city,race,fee_paise,tshirt,blood_group,emergency_contact,transaction_id,payment_status,receipt_path,reviewed_at').eq('event_id',eventId).order('id',{ascending:true}).limit(100);
-  if(cursor)query=query.gt('id',cursor);
-  const {data,error}=await query;if(error)return json({error:'Could not read participant records.'},503);
-  return json({records:data,next_cursor:data.length===100?data[data.length-1].id:null});
- }
- if(body.action==='receipt'){
-  if(typeof body.registration_id!=='string'||!/^[0-9a-f-]{36}$/i.test(body.registration_id))return json({error:'Invalid registration reference.'},400);
-  const {data:record,error}=await admin.from('registrations').select('receipt_path').eq('event_id',eventId).eq('id',body.registration_id).single();if(error||!record)return json({error:'Entry not found.'},404);
-  const {data:signed,error:signError}=await admin.storage.from('payment-receipts').createSignedUrl(record.receipt_path,60);
-  if(signError)return json({error:'Could not read screenshot.'},503);
-  return json({signed_url:signed.signedUrl});
- }
- if(body.action==='review'){
-  const reviewer=Deno.env.get('DRIVE_ORGANIZER_USER_ID');
-  if(!reviewer)return json({error:'Organiser review identity is not configured.'},409);
-  if(typeof body.registration_id!=='string'||!/^[0-9a-f-]{36}$/i.test(body.registration_id)||!['verified','rejected'].includes(body.status))return json({error:'Invalid review decision.'},400);
-  const note=typeof body.note==='string'?body.note.trim().slice(0,1000):'';
-  const {data:record,error}=await admin.from('registrations').select('id,payment_status,reviewed_at').eq('event_id',eventId).eq('id',body.registration_id).single();
-  if(error||!record)return json({error:'Entry not found.'},404);
-  if(record.payment_status===body.status)return json({status:record.payment_status,reviewed_at:record.reviewed_at});
-  if(record.payment_status!=='pending_review')return json({error:'This payment has already been reviewed. Contact the database administrator to correct it.'},409);
-  // The database trigger checks the configured reviewer is an active organiser.
-  const {data:updated,error:reviewError}=await admin.from('registrations').update({payment_status:body.status,reviewed_by:reviewer,review_note:note}).eq('id',record.id).eq('payment_status','pending_review').select('payment_status,reviewed_at').single();
-  if(reviewError)return json({error:'Review could not be published. Check the organiser role and try again.'},409);
-  return json({status:updated.payment_status,reviewed_at:updated.reviewed_at});
- }
- return json({error:'Unknown action.'},400);
+
+const EVENT_ID = 'suratgarh-2026';
+const HMAC_AUDIENCE = 'drive-register';
+const MAX_REQUEST_BYTES = 8192;
+const MAX_CLOCK_SKEW_SECONDS = 300;
+const SIGNED_URL_TTL_SECONDS = 60;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const url = Deno.env.get('SUPABASE_URL')!;
+const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const admin = createClient(url, serviceKey, {auth: {persistSession: false, autoRefreshToken: false}});
+const encoder = new TextEncoder();
+
+const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), {
+  status,
+  headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-store'},
+});
+
+const bytesToHex = (bytes: Uint8Array) => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+
+async function sha256Hex(value: string) {
+  return bytesToHex(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(value))));
+}
+
+async function hmacSha256Hex(secret: string, value: string) {
+  const key = await crypto.subtle.importKey(
+    'raw', encoder.encode(secret), {name: 'HMAC', hash: 'SHA-256'}, false, ['sign'],
+  );
+  return bytesToHex(new Uint8Array(await crypto.subtle.sign('HMAC', key, encoder.encode(value))));
+}
+
+function fixedHexBytes(value: string | null) {
+  const text = value ?? '';
+  const bytes = new Uint8Array(32);
+  let valid = text.length === 64;
+  for (let index = 0; index < bytes.length; index += 1) {
+    const pair = text.slice(index * 2, index * 2 + 2);
+    const parsed = Number.parseInt(pair, 16);
+    if (!/^[0-9a-f]{2}$/i.test(pair)) valid = false;
+    bytes[index] = Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return {bytes, valid};
+}
+
+function timingSafeEqualHex(candidate: string | null, expected: string) {
+  const left = fixedHexBytes(candidate);
+  const right = fixedHexBytes(expected);
+  let difference = (left.valid ? 0 : 1) | (right.valid ? 0 : 1);
+  for (let index = 0; index < left.bytes.length; index += 1) {
+    difference |= left.bytes[index] ^ right.bytes[index];
+  }
+  return difference === 0;
+}
+
+function asInteger(value: unknown, minimum: number, maximum: number) {
+  return typeof value === 'number'
+    && Number.isSafeInteger(value)
+    && value >= minimum
+    && value <= maximum
+    ? value
+    : null;
+}
+
+function requestMessage(timestamp: string, nonce: string, raw: string) {
+  return ['POST', HMAC_AUDIENCE, timestamp, nonce, raw].join('\n');
+}
+
+async function claimRequest(nonce: string, timestamp: number, raw: string, action: string) {
+  const {error} = await admin.rpc('claim_drive_mirror_nonce', {
+    p_nonce: nonce,
+    p_timestamp_epoch: timestamp,
+    p_request_digest_sha256: await sha256Hex(raw),
+    p_action: action,
+  });
+  return error;
+}
+
+Deno.serve(async request => {
+  if (request.method !== 'POST') return json({error: 'Method not allowed.'}, 405);
+  // Apps Script does not send a browser Origin. Rejecting one makes accidental
+  // browser exposure fail closed even if a future caller tries to add CORS.
+  if (request.headers.get('Origin')) return json({error: 'Private mirror only.'}, 403);
+  if (!request.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')) {
+    return json({error: 'Invalid request.'}, 400);
+  }
+  const declaredLength = request.headers.get('Content-Length');
+  if (declaredLength && (!/^\d+$/.test(declaredLength) || Number(declaredLength) > MAX_REQUEST_BYTES)) {
+    return json({error: 'Request too large.'}, 413);
+  }
+
+  const raw = await request.text();
+  if (encoder.encode(raw).byteLength > MAX_REQUEST_BYTES) {
+    return json({error: 'Request too large.'}, 413);
+  }
+
+  const timestampHeader = request.headers.get('X-Drive-Mirror-Timestamp');
+  const nonce = request.headers.get('X-Drive-Mirror-Nonce');
+  const signature = request.headers.get('X-Drive-Mirror-Signature');
+  if (!timestampHeader || !/^\d{10}$/.test(timestampHeader) || !nonce || !UUID.test(nonce)) {
+    return json({error: 'Unauthorised.'}, 401);
+  }
+  const timestamp = Number(timestampHeader);
+  const now = Math.floor(Date.now() / 1000);
+  if (!Number.isSafeInteger(timestamp) || Math.abs(now - timestamp) > MAX_CLOCK_SKEW_SECONDS) {
+    return json({error: 'Unauthorised.'}, 401);
+  }
+  const secret = Deno.env.get('DRIVE_MIRROR_HMAC_SECRET');
+  if (!secret || secret.length < 32) return json({error: 'Private mirror is unavailable.'}, 503);
+  const expectedSignature = await hmacSha256Hex(secret, requestMessage(timestampHeader, nonce, raw));
+  if (!timingSafeEqualHex(signature, expectedSignature)) {
+    return json({error: 'Unauthorised.'}, 401);
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    const candidate = JSON.parse(raw);
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('Invalid body');
+    body = candidate as Record<string, unknown>;
+  } catch {
+    return json({error: 'Invalid request.'}, 400);
+  }
+  const action = body.action;
+  if (action !== 'sync' && action !== 'receipt') return json({error: 'Invalid request.'}, 400);
+
+  // The private database claim makes a valid request nonce single-use. Do this
+  // before every read or signed URL operation, so replay never returns data.
+  const claimError = await claimRequest(nonce, timestamp, raw, action);
+  if (claimError) return json({error: 'Unauthorised.'}, 401);
+
+  if (action === 'sync') {
+    const afterSourceRevision = body.after_source_revision === undefined
+      ? 0
+      : asInteger(body.after_source_revision, 0, Number.MAX_SAFE_INTEGER);
+    const limit = body.limit === undefined ? 50 : asInteger(body.limit, 1, 100);
+    if (afterSourceRevision === null || limit === null) return json({error: 'Invalid request.'}, 400);
+    const {data, error} = await admin.rpc('drive_mirror_batch', {
+      p_event_id: EVENT_ID,
+      p_after_source_revision: afterSourceRevision,
+      p_limit: limit,
+    });
+    if (error || !data) return json({error: 'Private mirror is unavailable.'}, 503);
+    return json(data);
+  }
+
+  const paymentAttemptId = body.payment_attempt_id;
+  if (typeof paymentAttemptId !== 'string' || !UUID.test(paymentAttemptId)) {
+    return json({error: 'Invalid request.'}, 400);
+  }
+  const {data: authorized, error: authorizeError} = await admin.rpc('drive_mirror_receipt', {
+    p_event_id: EVENT_ID,
+    p_payment_attempt_id: paymentAttemptId,
+  });
+  if (authorizeError || !authorized
+      || authorized.storage_bucket !== 'payment-receipts'
+      || typeof authorized.receipt_path !== 'string') {
+    return json({error: 'Private receipt is unavailable.'}, 404);
+  }
+  const {data: signed, error: signError} = await admin.storage
+    .from(authorized.storage_bucket)
+    .createSignedUrl(authorized.receipt_path, SIGNED_URL_TTL_SECONDS);
+  if (signError || !signed?.signedUrl) return json({error: 'Private receipt is unavailable.'}, 503);
+  return json({payment_attempt_id: paymentAttemptId, signed_url: signed.signedUrl, expires_in: SIGNED_URL_TTL_SECONDS});
 });

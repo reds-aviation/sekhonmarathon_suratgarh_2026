@@ -1,0 +1,90 @@
+name: Trusted release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+    runs-on: ubuntu-latest
+    env:
+      VITE_APP_URL: ${{ vars.NETLIFY_APP_URL }}
+      VITE_AUTH_REDIRECT_URL: ${{ vars.NETLIFY_AUTH_REDIRECT_URL }}
+      VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Verify authenticated-app release configuration
+        run: |
+          test -n "$VITE_APP_URL"
+          test -n "$VITE_AUTH_REDIRECT_URL"
+          test -n "$VITE_SUPABASE_URL"
+          test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
+          case "$VITE_APP_URL" in https://*) ;; *) exit 1 ;; esac
+          case "$VITE_AUTH_REDIRECT_URL" in https://*) ;; *) exit 1 ;; esac
+          case "$VITE_SUPABASE_URL" in https://*.supabase.co) ;; *) exit 1 ;; esac
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm run lint:platform
+      - run: pnpm test
+      - run: pnpm run functions:check
+      - run: pnpm run verify:targets
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/pages
+      - uses: actions/upload-artifact@v4
+        with:
+          name: netlify-app
+          path: dist/app
+          if-no-files-found: error
+
+  deploy-pages:
+    needs: build
+    environment:
+      name: github-pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  deploy-netlify:
+    needs: [build, deploy-pages]
+    environment:
+      name: production
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: netlify-app
+          path: dist/app
+      - run: pnpm dlx netlify-cli@17.38.0 deploy --dir dist/app --prod --site "$NETLIFY_SITE_ID" --message "${{ github.sha }}"
