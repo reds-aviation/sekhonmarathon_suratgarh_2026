@@ -91,6 +91,9 @@ void test('declares separate Pages and authenticated-app build targets', async (
 
   assert.equal(app.base, '/');
   assert.equal(app.build.outDir, 'dist/app');
+  assert.equal(app.server.host, '0.0.0.0');
+  assert.equal(app.server.port, 3000);
+  assert.equal(app.server.strictPort, true);
   assert.equal(app.define['import.meta.env.VITE_BUILD_TARGET'], '"app"');
   assert.equal(
     app.define['process.env.NEXT_PUBLIC_SUPABASE_URL'],

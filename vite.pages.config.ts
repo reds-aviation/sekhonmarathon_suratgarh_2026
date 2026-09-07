@@ -159,6 +159,6 @@ export default defineConfig(({ command, mode }) => {
       emptyOutDir: true,
       manifest: true,
     },
-    server: { port: 3000, strictPort: true },
+    server: { host: '0.0.0.0', port: 3000, strictPort: true },
   };
 });
