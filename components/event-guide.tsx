@@ -18,13 +18,18 @@ import {
   Shirt,
 } from 'lucide-react';
 import { RouteTimeline } from '@/components/route-timeline';
+import type { RouteDistance } from '@/lib/route-selection';
 
 export function EventGuide({
   onChooseRace,
   onHowToRegister,
+  selectedRoute,
+  onSelectRoute,
 }: {
   onChooseRace: () => void;
   onHowToRegister: () => void;
+  selectedRoute?: RouteDistance;
+  onSelectRoute?: (distance: RouteDistance) => void;
 }) {
   const [shareStatus, setShareStatus] = useState('');
 
@@ -108,9 +113,16 @@ export function EventGuide({
           <MapPin size={18} aria-hidden="true" />
           <span>In front of SBI Bank, inside the station</span>
         </p>
+        <p className="guide-collection-confirmation">
+          Please ensure that your registration and payment details have been
+          correctly submitted on the official portal.
+        </p>
       </section>
 
-      <RouteTimeline />
+      <RouteTimeline
+        selectedDistance={selectedRoute}
+        onSelectDistance={onSelectRoute}
+      />
 
       <section className="guide-runner-package" aria-labelledby="runner-package-title">
         <div>
@@ -125,8 +137,9 @@ export function EventGuide({
         </ul>
         <p>
           All registered participants will receive an event T-shirt and medal.
-          Use your correct name and email on the official form so the digital
-          certificate can be emailed after completion is confirmed.
+          Certificate communication will be issued by the organisers after race
+          completion is confirmed. Use your correct name and email on the
+          official form.
         </p>
       </section>
 
@@ -150,7 +163,7 @@ export function EventGuide({
         </div>
       </details>
 
-      <details className="guide-group">
+      <details className="guide-group" id="faqs">
         <summary>
           <ShieldCheck size={21} aria-hidden="true" />
           <span>
@@ -162,10 +175,51 @@ export function EventGuide({
         <div className="guide-group-body guide-quick-answers">
           <h3>Where do I register?</h3>
           <p>On AFNET: AFND → Sekhon Marathon Registration → HQ WAC.</p>
-          <h3>How do I pay?</h3>
-          <p>Through the SI POS machine at Sports Section, then confirm the payment on the official portal.</p>
+
+          <h3>When can I pay?</h3>
+          <p>
+            Payment can be made at Sports Section during normal working hours
+            through the SI POS machine.
+          </p>
+
+          <h3>What should I keep after payment?</h3>
+          <p>
+            Retain your payment receipt and <strong>receipt number</strong>.
+            Enter the same receipt number/details in the payment-confirmation
+            section of the official internal portal.
+          </p>
+
+          <h3>How is payment verified?</h3>
+          <p>
+            The organisers will cross-check the payment record with the payment
+            details submitted in the official internal registration portal.
+            Ensure that the receipt number/details entered in the portal are
+            correct. This public website does not verify payment.
+          </p>
+
+          <h3>How do family members register?</h3>
+          <p>
+            Registration for eligible family members is to be completed by the
+            Airwarrior through the official AFNET registration portal.
+          </p>
+
           <h3>When do I collect my T-shirt?</h3>
-          <p>Saturday, 3 October, from 09:00 to 13:30 in front of SBI Bank inside the station.</p>
+          <p>
+            Saturday, 3 October, from 09:00 to 13:30 in front of SBI Bank
+            inside the station.
+          </p>
+
+          <h3>Having trouble?</h3>
+          <p>
+            For any registration, payment or payment-confirmation issue, contact
+            the Station Sports Section for assistance.
+          </p>
+
+          <h3>What if I have an issue after registration closes?</h3>
+          <p>
+            Report the matter to the Station Sports Section for clarification.
+            Late registration is not guaranteed.
+          </p>
         </div>
       </details>
 
@@ -192,7 +246,10 @@ export function EventGuide({
         aria-labelledby="contact-guide-title"
       >
         <h2 id="contact-guide-title" tabIndex={-1}>Need help?</h2>
-        <p className="guide-contact-intro">Contact the organisers for questions or approved updates.</p>
+        <p className="guide-contact-intro">
+          For registration, payment or payment-confirmation help, contact the
+          Station Sports Section.
+        </p>
         <div className="guide-contacts">
           <a className="guide-call" href="tel:+918838463776">
             <Phone size={18} aria-hidden="true" />

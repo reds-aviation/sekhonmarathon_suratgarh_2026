@@ -50,6 +50,48 @@
       name="twitter:image:alt"
       content="Canvas painting of runners at Air Force Station Suratgarh with Indian Air Force aircraft overhead"
     />
+    <style>
+      /* A useful, readable guide while JavaScript is unavailable or still starting. */
+      #static-event-information {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 32px 20px 48px;
+        color: #102f3b;
+        font: 16px/1.6 Arial, sans-serif;
+      }
+      #static-event-information h1,
+      #static-event-information h2 { line-height: 1.15; }
+      #static-event-information h1 { margin: 0 0 10px; font-size: clamp(32px, 8vw, 52px); }
+      #static-event-information h2 { margin: 28px 0 8px; font-size: 22px; }
+      #static-event-information p { margin: 8px 0; }
+      #static-event-information .event-eyebrow {
+        margin: 0;
+        color: #205c50;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      #static-event-information .event-facts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 12px;
+        margin: 22px 0;
+        padding: 18px;
+        border: 1px solid #c7d4ca;
+        border-radius: 8px;
+        background: #f1f5ee;
+      }
+      #static-event-information .event-facts strong { display: block; }
+      #static-event-information ol { padding-left: 24px; }
+      #static-event-information li { margin: 8px 0; }
+      #static-event-information .event-note {
+        padding: 14px 16px;
+        border-left: 4px solid #286a60;
+        background: #f6f3ea;
+      }
+      html[data-event-app='ready'] #static-event-information { display: none; }
+    </style>
     <link
       rel="icon"
       href="%BASE_URL%assets/app-icon-192.png"
@@ -103,11 +145,28 @@
   </head>
   <body>
     <div id="root"></div>
-    <noscript
-      >Please enable JavaScript to view the event guide and AFNET registration
-      instructions. Sekhon Marathon: 4 October 2026, Air Force Station Suratgarh. For
-      airwarriors and families.</noscript
-    >
+    <section id="static-event-information" aria-labelledby="static-event-title">
+      <p class="event-eyebrow">Air Force Station Suratgarh · Desert Braves</p>
+      <h1 id="static-event-title">Sekhon Indian Air Force Marathon 2026</h1>
+      <p>Run · Soar · Inspire. For airwarriors and families.</p>
+      <div class="event-facts" aria-label="Event essentials">
+        <div><strong>Race day</strong>Sunday, 4 October 2026</div>
+        <div><strong>Distances &amp; fees</strong>5 KM ₹200 · 10 KM ₹250 · 21 KM ₹250</div>
+        <div><strong>Registration deadline</strong>Sunday, 27 September 2026</div>
+        <div><strong>Payment</strong>SI POS machine at Sports Section during normal working hours</div>
+      </div>
+      <h2>How to register</h2>
+      <ol>
+        <li>Use an AFNET-connected computer and open <strong>www.afnd.iaf.in</strong>.</li>
+        <li>Open the Sekhon Marathon Registration link, select <strong>HQ WAC</strong>, and complete the official form.</li>
+        <li>Pay the applicable fee through the SI POS machine at Sports Section during normal working hours.</li>
+        <li>Retain your payment receipt and receipt number, then enter the same receipt number/details in the official AFNET portal and retain its acknowledgement.</li>
+      </ol>
+      <p class="event-note"><strong>This public website does not collect or verify registration or payment data.</strong> Only the official AFNET portal confirms your registration.</p>
+      <h2>Participant information</h2>
+      <p>All registered participants will receive an event T-shirt and medal. T-shirt collection is on Saturday, 3 October, from 09:00 to 13:30, in front of SBI Bank inside the station. Reporting and flag-off timings will be announced by the organisers.</p>
+      <p>Eligible family members are registered by the Airwarrior through AFNET. For registration, payment or payment-confirmation assistance, contact the Station Sports Section: 88384 63776 or 70279 64880.</p>
+    </section>
     <script type="module" src="/app/entry.tsx"></script>
   </body>
 </html>

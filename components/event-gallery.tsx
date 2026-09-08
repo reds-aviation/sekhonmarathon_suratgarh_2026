@@ -1,31 +1,48 @@
 'use client';
 
-import { useState } from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, Expand, X } from 'lucide-react';
 
 const assetBase = import.meta.env.BASE_URL.replace(/\/$/, '');
 const archiveBase = `${assetBase}/assets/archive-2025`;
 const campaignBase = `${assetBase}/assets/campaign-2026`;
+const posterWidths = [640, 960, 1440] as const;
+
+function posterSource(file: string, width: (typeof posterWidths)[number]) {
+  return `${campaignBase}/${file}-${width}.webp`;
+}
+
+function posterSrcSet(file: string) {
+  return posterWidths
+    .map((width) => `${posterSource(file, width)} ${width}w`)
+    .join(', ');
+}
 
 const campaignPosters = [
   {
     file: 'legacy-of-courage-poster',
     label: 'Legacy of Courage',
-    aspectRatio: '16 / 9',
+    aspectRatio: '1672 / 941',
+    width: 1672,
+    height: 941,
     caption: '2026 campaign artwork — Legacy of Courage.',
     alt: 'Sekhon Indian Air Force Marathon 2026 poster for Air Force Station Suratgarh, showing Flying Officer Nirmal Jit Singh Sekhon PVC, Indian Air Force aircraft, runners and the 4 October event date.',
   },
   {
     file: 'anniversary-poster',
     label: '94 years',
-    aspectRatio: '16 / 9',
+    aspectRatio: '1672 / 941',
+    width: 1672,
+    height: 941,
     caption: '2026 campaign artwork — commemorating 94 years of the Indian Air Force.',
     alt: 'Sekhon Indian Air Force Marathon 2026 anniversary poster for Air Force Station Suratgarh, showing Flying Officer Nirmal Jit Singh Sekhon PVC, Indian Air Force aircraft, runners and the 4 October event date.',
   },
   {
     file: 'finish-line-poster',
     label: 'Finish line',
-    aspectRatio: '16 / 9',
+    aspectRatio: '1672 / 941',
+    width: 1672,
+    height: 941,
     caption: '2026 campaign artwork — a finish-line moment at Air Force Station Suratgarh.',
     alt: 'Sekhon Indian Air Force Marathon 2026 finish-line poster for Air Force Station Suratgarh, showing runners crossing a banner with Indian Air Force aircraft above.',
   },
@@ -33,6 +50,8 @@ const campaignPosters = [
     file: 'run-soar-inspire-poster',
     label: 'Run · Soar · Inspire',
     aspectRatio: '1491 / 1055',
+    width: 1491,
+    height: 1055,
     caption: '2026 campaign artwork — Run, Soar, Inspire.',
     alt: 'Sekhon Indian Air Force Marathon 2026 poster for Air Force Station Suratgarh, showing runners, Indian Air Force aircraft and the Run, Soar, Inspire message.',
   },
@@ -74,13 +93,55 @@ const photos = [
 export function EventGallery({ onChooseRace }: { onChooseRace: () => void }) {
   const [selectedPoster, setSelectedPoster] = useState(0);
   const [selected, setSelected] = useState(0);
+  const [isPosterViewerOpen, setPosterViewerOpen] = useState(false);
+  const posterDialogRef = useRef<HTMLDialogElement>(null);
+  const viewLargerRef = useRef<HTMLButtonElement>(null);
   const poster = campaignPosters[selectedPoster];
   const photo = photos[selected];
+
+  useEffect(() => {
+    const dialog = posterDialogRef.current;
+    if (!dialog) return;
+
+    if (isPosterViewerOpen) {
+      if (!dialog.open) dialog.showModal();
+      return;
+    }
+
+    if (dialog.open) dialog.close();
+  }, [isPosterViewerOpen]);
+
+  useEffect(() => {
+    if (!isPosterViewerOpen) return;
+
+    function handleKeydown(event: KeyboardEvent) {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      setSelectedPoster((current) =>
+        (current + (event.key === 'ArrowRight' ? 1 : -1) + campaignPosters.length) %
+        campaignPosters.length,
+      );
+    }
+
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  }, [isPosterViewerOpen]);
 
   function movePhoto(direction: number) {
     setSelected(
       (current) => (current + direction + photos.length) % photos.length,
     );
+  }
+
+  function movePoster(direction: number) {
+    setSelectedPoster(
+      (current) => (current + direction + campaignPosters.length) % campaignPosters.length,
+    );
+  }
+
+  function restorePosterFocus() {
+    setPosterViewerOpen(false);
+    requestAnimationFrame(() => viewLargerRef.current?.focus());
   }
 
   return (
@@ -102,14 +163,25 @@ export function EventGallery({ onChooseRace }: { onChooseRace: () => void }) {
           >
             <img
               key={poster.file}
-              src={`${campaignBase}/${poster.file}.png`}
+              src={posterSource(poster.file, 1440)}
+              srcSet={posterSrcSet(poster.file)}
+              sizes="(max-width: 700px) calc(100vw - 64px), min(100vw - 104px, 1100px)"
               alt={poster.alt}
-              width="1672"
-              height="941"
+              width={poster.width}
+              height={poster.height}
               decoding="async"
             />
           </div>
           <figcaption>{poster.caption}</figcaption>
+          <button
+            className="gallery-view-poster"
+            type="button"
+            ref={viewLargerRef}
+            onClick={() => setPosterViewerOpen(true)}
+          >
+            <Expand size={17} aria-hidden="true" />
+            View larger
+          </button>
         </figure>
         <div className="gallery-poster-switcher" role="group" aria-label="Choose event artwork">
           {campaignPosters.map((item, index) => (
@@ -122,33 +194,6 @@ export function EventGallery({ onChooseRace }: { onChooseRace: () => void }) {
               {item.label}
             </button>
           ))}
-        </div>
-        <div className="gallery-poster-suite" aria-labelledby="poster-suite-title">
-          <div>
-            <p id="poster-suite-title">Three poster views</p>
-            <span>One tribute, one station, one running community.</span>
-          </div>
-          <div className="gallery-poster-suite-grid">
-            {[
-              {
-                label: 'Courage, service and sacrifice',
-                position: 'left center',
-              },
-              { label: 'Run, soar, inspire', position: 'center center' },
-              { label: '94 years together', position: 'right center' },
-            ].map((item) => (
-              <div
-                className="gallery-poster-suite-card"
-                key={item.label}
-                role="img"
-                aria-label={`${item.label} campaign poster`}
-                style={{
-                  backgroundImage: `url(${campaignBase}/poster-series.png)`,
-                  backgroundPosition: item.position,
-                }}
-              />
-            ))}
-          </div>
         </div>
       </section>
 
@@ -170,6 +215,7 @@ export function EventGallery({ onChooseRace }: { onChooseRace: () => void }) {
                 alt={photo.alt}
                 width="1536"
                 height="1152"
+                loading="lazy"
                 decoding="async"
               />
             </div>
@@ -240,6 +286,57 @@ export function EventGallery({ onChooseRace }: { onChooseRace: () => void }) {
           Choose a race <ArrowRight size={18} aria-hidden="true" />
         </button>
       </div>
+
+      <dialog
+        className="gallery-poster-dialog"
+        ref={posterDialogRef}
+        aria-labelledby="gallery-poster-dialog-title"
+        onClose={restorePosterFocus}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) posterDialogRef.current?.close();
+        }}
+      >
+        <div className="gallery-poster-dialog-shell">
+          <div className="gallery-poster-dialog-header">
+            <div>
+              <p>2026 campaign artwork</p>
+              <h2 id="gallery-poster-dialog-title">{poster.label}</h2>
+            </div>
+            <button
+              type="button"
+              className="gallery-poster-dialog-close"
+              onClick={() => posterDialogRef.current?.close()}
+              aria-label="Close larger poster view"
+            >
+              <X size={21} aria-hidden="true" />
+              <span>Close</span>
+            </button>
+          </div>
+          <img
+            src={posterSource(poster.file, 1440)}
+            srcSet={posterSrcSet(poster.file)}
+            sizes="min(92vw, 1440px)"
+            alt={poster.alt}
+            width={poster.width}
+            height={poster.height}
+            decoding="async"
+          />
+          <div className="gallery-poster-dialog-controls" aria-label="Browse campaign artwork">
+            <button type="button" onClick={() => movePoster(-1)}>
+              <ArrowLeft size={17} aria-hidden="true" />
+              Previous
+            </button>
+            <span aria-live="polite" aria-atomic="true">
+              {selectedPoster + 1} of {campaignPosters.length}: {poster.label}
+            </span>
+            <button type="button" onClick={() => movePoster(1)}>
+              Next
+              <ArrowRight size={17} aria-hidden="true" />
+            </button>
+          </div>
+          <p className="gallery-poster-dialog-hint">Use the left and right arrow keys to browse. Press Escape to close.</p>
+        </div>
+      </dialog>
     </main>
   );
 }

@@ -37,13 +37,15 @@ const registrationSteps = [
   },
   {
     title: 'Pay at Sports Section',
-    copy: 'Pay the applicable fee through the SI POS machine at Sports Section.',
+    copy: 'During normal working hours, pay the applicable fee through the SI POS machine at Sports Section and retain the SI POS receipt.',
   },
   {
     title: 'Confirm the payment',
-    copy: 'Enter the required payment-confirmation details on the official AFNET portal.',
+    copy: 'Enter the SI POS receipt number and required payment-confirmation details on the official AFNET portal. Retain the official acknowledgement.',
   },
 ] as const;
+
+const registrationPath = ['AFNET', 'AFND', 'HQ WAC', 'Register & pay'] as const;
 
 export function RegistrationGuide({
   onChooseRace,
@@ -54,15 +56,25 @@ export function RegistrationGuide({
 }) {
   const [registered, setRegistered] = useState<Answer>(null);
   const [paid, setPaid] = useState<Answer>(null);
+  const [paymentConfirmed, setPaymentConfirmed] = useState<Answer>(null);
 
   function answerRegistration(answer: Exclude<Answer, null>) {
     setRegistered(answer);
-    if (answer === 'no') setPaid(null);
+    if (answer === 'no') {
+      setPaid(null);
+      setPaymentConfirmed(null);
+    }
+  }
+
+  function answerPayment(answer: Exclude<Answer, null>) {
+    setPaid(answer);
+    if (answer === 'no') setPaymentConfirmed(null);
   }
 
   function resetCheck() {
     setRegistered(null);
     setPaid(null);
+    setPaymentConfirmed(null);
   }
 
   return (
@@ -80,13 +92,14 @@ export function RegistrationGuide({
       </header>
 
       <nav className="registration-path" aria-label="Registration path summary">
-        <span>AFNET</span>
-        <ArrowRight size={15} aria-hidden="true" />
-        <span>AFND</span>
-        <ArrowRight size={15} aria-hidden="true" />
-        <span>HQ WAC</span>
-        <ArrowRight size={15} aria-hidden="true" />
-        <span>Register &amp; pay</span>
+        {registrationPath.map((step, index) => (
+          <span className="registration-path-step" key={step}>
+            <span>{step}</span>
+            {index < registrationPath.length - 1 && (
+              <ArrowRight size={15} aria-hidden="true" />
+            )}
+          </span>
+        ))}
       </nav>
 
       <section className="registration-steps-panel" aria-labelledby="afnet-steps-title">
@@ -116,6 +129,10 @@ export function RegistrationGuide({
             </li>
           ))}
         </ol>
+        <p className="registration-family-note">
+          For an eligible family participant, the Airwarrior completes the
+          registration through AFNET.
+        </p>
       </section>
 
       <section className="registration-payment" aria-labelledby="payment-title">
@@ -127,8 +144,11 @@ export function RegistrationGuide({
           </div>
         </div>
         <p>
-          Visit <strong>Sports Section</strong> after completing the official
-          form. A QR option may be added only after it is authorised.
+          Visit <strong>Sports Section</strong> during normal working hours
+          after completing the official form. Pay through the SI POS machine,
+          retain the SI POS receipt, then enter its receipt number and the
+          required payment-confirmation details on the official AFNET portal.
+          A QR option may be added only after it is authorised.
         </p>
         <dl className="registration-fees">
           <div>
@@ -151,15 +171,16 @@ export function RegistrationGuide({
           <CheckCircle2 size={22} aria-hidden="true" />
           <div>
             <p>Private readiness check</p>
-            <h2 id="registration-check-title">Have you completed both steps?</h2>
+            <h2 id="registration-check-title">Have you completed all three steps?</h2>
           </div>
         </div>
         <p className="registration-privacy">
-          Your answers stay on this screen and are not sent or stored.
+          This is a self-reported checklist. Your answers stay on this screen
+          and are not sent or stored.
         </p>
 
         <fieldset>
-          <legend>Have you registered on the official AFNET form?</legend>
+          <legend>Have you completed the participant registration form on AFNET?</legend>
           <div className="registration-answer-row">
             <button
               type="button"
@@ -185,20 +206,22 @@ export function RegistrationGuide({
             <Monitor size={20} aria-hidden="true" />
             <p>
               Use an AFNET-connected computer and follow the seven steps above.
-              Complete the official form before making the payment.
+              Complete the participant form before making the payment. For an
+              eligible family participant, the Airwarrior completes this step
+              through AFNET.
             </p>
           </output>
         )}
 
         {registered === 'yes' && (
           <fieldset>
-            <legend>Have you paid the registration fee?</legend>
+            <legend>Have you paid the applicable fee at Sports Section?</legend>
             <div className="registration-answer-row">
               <button
                 type="button"
                 className={paid === 'yes' ? 'is-selected' : ''}
                 aria-pressed={paid === 'yes'}
-                onClick={() => setPaid('yes')}
+                onClick={() => answerPayment('yes')}
               >
                 Yes
               </button>
@@ -206,7 +229,7 @@ export function RegistrationGuide({
                 type="button"
                 className={paid === 'no' ? 'is-selected' : ''}
                 aria-pressed={paid === 'no'}
-                onClick={() => setPaid('no')}
+                onClick={() => answerPayment('no')}
               >
                 No
               </button>
@@ -218,28 +241,77 @@ export function RegistrationGuide({
           <output className="registration-result is-action">
             <CreditCard size={20} aria-hidden="true" />
             <p>
-              Pay at Sports Section through the SI POS machine, then enter the
-              payment-confirmation details on the official AFNET portal.
+              Pay at Sports Section through the SI POS machine during normal
+              working hours. Retain the SI POS receipt, then enter its receipt
+              number and payment-confirmation details on the official AFNET
+              portal.
             </p>
           </output>
         )}
 
         {registered === 'yes' && paid === 'yes' && (
-          <output className="registration-result is-complete">
-            <CheckCircle2 size={20} aria-hidden="true" />
+          <fieldset>
+            <legend>
+              Have you entered the receipt and payment-confirmation details in
+              the official internal portal?
+            </legend>
+            <div className="registration-answer-row">
+              <button
+                type="button"
+                className={paymentConfirmed === 'yes' ? 'is-selected' : ''}
+                aria-pressed={paymentConfirmed === 'yes'}
+                onClick={() => setPaymentConfirmed('yes')}
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                className={paymentConfirmed === 'no' ? 'is-selected' : ''}
+                aria-pressed={paymentConfirmed === 'no'}
+                onClick={() => setPaymentConfirmed('no')}
+              >
+                No
+              </button>
+            </div>
+          </fieldset>
+        )}
+
+        {registered === 'yes' && paid === 'yes' && paymentConfirmed === 'no' && (
+          <output className="registration-result is-action">
+            <Monitor size={20} aria-hidden="true" />
             <p>
-              Your registration steps are complete. Retain the confirmation
-              shown by the official portal and check this website for updates.
+              Enter the SI POS receipt number and payment-confirmation details
+              on the official internal portal. Retain the SI POS receipt and
+              the acknowledgement it provides.
             </p>
           </output>
         )}
 
-        {(registered !== null || paid !== null) && (
+        {registered === 'yes' && paid === 'yes' && paymentConfirmed === 'yes' && (
+          <output className="registration-result is-complete">
+            <CheckCircle2 size={20} aria-hidden="true" />
+            <p>
+              Based on your answers, you have completed the required
+              registration steps. Retain your payment receipt and official
+              portal confirmation. Final payment verification is carried out by
+              the organisers against the submitted internal records.
+            </p>
+          </output>
+        )}
+
+        {(registered !== null || paid !== null || paymentConfirmed !== null) && (
           <button type="button" className="registration-reset" onClick={resetCheck}>
             <RotateCcw size={15} aria-hidden="true" /> Start again
           </button>
         )}
       </section>
+
+      <aside className="registration-help-note">
+        <Monitor size={19} aria-hidden="true" />
+        <p>
+          For registration or payment assistance, visit Station Sports Section.
+        </p>
+      </aside>
 
       <aside className="registration-certificate-note">
         <Mail size={21} aria-hidden="true" />
@@ -256,8 +328,8 @@ export function RegistrationGuide({
       <aside className="registration-safety-note">
         <ShieldCheck size={18} aria-hidden="true" />
         <p>
-          This public website does not collect participant or payment data and
-          does not link into the internal network.
+          This public website does not verify or store registration or payment
+          information. It does not link into the internal network.
         </p>
       </aside>
 

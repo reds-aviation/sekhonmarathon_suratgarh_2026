@@ -16,6 +16,10 @@ import { EventGallery } from '@/components/event-gallery';
 import { EventGuide } from '@/components/event-guide';
 import { EventTribute } from '@/components/event-tribute';
 import { RegistrationGuide } from '@/components/registration-guide';
+import {
+  routeDistanceFromSearch,
+  type RouteDistance,
+} from '@/lib/route-selection';
 import { RACES } from '@/lib/race-data';
 import {
   hashForPage,
@@ -37,6 +41,10 @@ const titles: Record<SitePage, string> = {
 export function PublicGuide() {
   const initial = parseSiteLocation(window.location.hash, window.location.search);
   const [page, setPage] = useState<SitePage>(initial.page || 'home');
+  const [anchor, setAnchor] = useState(initial.anchor);
+  const [routeDistance, setRouteDistance] = useState<RouteDistance>(() =>
+    routeDistanceFromSearch(window.location.search),
+  );
   const [expandedRace, setExpandedRace] = useState<string | null>(
     initial.anchor?.startsWith('race-') ? initial.anchor.slice(5) : null,
   );
@@ -46,11 +54,14 @@ export function PublicGuide() {
     const next = parseSiteLocation(window.location.hash, window.location.search);
     const nextPage = next.page || 'home';
     setPage(nextPage);
+    setAnchor(next.anchor);
+    setRouteDistance(routeDistanceFromSearch(window.location.search));
     setExpandedRace(next.anchor?.startsWith('race-') ? next.anchor.slice(5) : null);
     focusNext.current = true;
   }
 
   useEffect(() => {
+    document.documentElement.dataset.eventApp = 'ready';
     window.addEventListener('popstate', applyLocation);
     window.addEventListener('hashchange', applyLocation);
     return () => {
@@ -63,16 +74,29 @@ export function PublicGuide() {
     document.title = `${titles[page]} | Air Force Station Suratgarh`;
     if (!focusNext.current) return;
     const frame = requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      document.querySelector<HTMLElement>('main h1')?.focus({ preventScroll: true });
+      const target = anchor ? document.getElementById(anchor) : null;
+      const disclosure = target?.closest('details');
+      if (disclosure instanceof HTMLDetailsElement) disclosure.open = true;
+
+      const focusTarget = target?.querySelector<HTMLElement>(
+        'summary, h2[tabindex], h3[tabindex], [tabindex]',
+      );
+
+      if (focusTarget) {
+        focusTarget.focus({ preventScroll: true });
+        focusTarget.scrollIntoView({ block: 'start', behavior: 'instant' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        document.querySelector<HTMLElement>('main h1')?.focus({ preventScroll: true });
+      }
       focusNext.current = false;
     });
     return () => cancelAnimationFrame(frame);
-  }, [page]);
+  }, [page, anchor]);
 
-  function go(hash: string, replace = false) {
+  function go(hash: string, replace = false, search = '') {
     const url = new URL(window.location.href);
-    url.search = '';
+    url.search = search;
     url.hash = hash;
     if (url.href !== window.location.href)
       window.history[replace ? 'replaceState' : 'pushState'](null, '', url);
@@ -82,6 +106,31 @@ export function PublicGuide() {
 
   function navigate(next: SitePage) {
     go(hashForPage(next));
+  }
+
+  function selectGuideRoute(distance: RouteDistance) {
+    const url = new URL(window.location.href);
+    url.search = `?route=${distance}`;
+    url.hash = hashForPage('guide');
+    if (url.href !== window.location.href)
+      window.history.replaceState(null, '', url);
+    setRouteDistance(distance);
+  }
+
+  function viewRoute(
+    event: MouseEvent<HTMLAnchorElement>,
+    distance: RouteDistance,
+  ) {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    go(hashForPage('guide'), false, `?route=${distance}`);
   }
 
   function follow(
@@ -186,12 +235,25 @@ export function PublicGuide() {
               </picture>
             </figure>
             <div className="app-hero-copy app-hero-copy--campaign">
-              <p className="app-kicker">Desert Braves</p>
+              <p className="app-kicker">Desert Braves · Air Force Station Suratgarh</p>
               <h1 id="home-title" tabIndex={-1}>
-                <span>Air Force Station</span>
-                Suratgarh
+                Sekhon Indian Air Force
+                <span>Marathon 2026</span>
               </h1>
-              <p className="app-tagline">The Land of Sun and Sand</p>
+              <p className="app-hero-station">Air Force Station Suratgarh</p>
+              <p className="app-tagline">Run · Soar · Inspire</p>
+              <p className="app-hero-details">
+                <span>Sunday, 4 October 2026</span>
+                <span>5 KM · 10 KM · 21 KM</span>
+              </p>
+              <a
+                className="app-hero-action"
+                href="#register"
+                onClick={(event) => follow(event, 'register')}
+              >
+                How to register <ArrowRight size={17} aria-hidden="true" />
+              </a>
+              <p className="app-hero-deadline">Registration closes 27 September</p>
             </div>
           </section>
           <section className="app-home-facts" aria-label="Event at a glance">
@@ -221,7 +283,7 @@ export function PublicGuide() {
                 ))}
               </div>
               <p className="app-small-note">
-                Register on AFNET by 27 September. Pay at Sports Section through the SI POS machine.
+                Register on AFNET by 27 September. Pay at Sports Section during normal working hours through the SI POS machine.
               </p>
             </section>
             <section className="app-home-links" aria-label="Before your run">
@@ -283,14 +345,25 @@ export function PublicGuide() {
                 </summary>
                 <div className="app-race-detail">
                   <p>{race.description}</p>
-                  <a className="app-primary" href="#register" onClick={(event) => follow(event, 'register')}>
-                    How to register <ArrowRight size={18} />
-                  </a>
+                  <div className="app-race-actions">
+                    <a
+                      className="app-route-link"
+                      href={`?route=${race.distance}#guide`}
+                      onClick={(event) =>
+                        viewRoute(event, race.distance as RouteDistance)
+                      }
+                    >
+                      View this route <ArrowRight size={18} />
+                    </a>
+                    <a className="app-primary" href="#register" onClick={(event) => follow(event, 'register')}>
+                      How to register <ArrowRight size={18} />
+                    </a>
+                  </div>
                 </div>
               </details>
             ))}
           </div>
-          <p className="app-small-note">Fees are ₹200 for 5 KM and ₹250 for 10 KM or 21 KM. Payment is made at Sports Section.</p>
+          <p className="app-small-note">Fees are ₹200 for 5 KM and ₹250 for 10 KM or 21 KM. Payment is made at Sports Section during normal working hours through the SI POS machine.</p>
           <section className="app-race-kit">
             <h2>For every registered participant</h2>
             <div>
@@ -320,6 +393,8 @@ export function PublicGuide() {
         <EventGuide
           onChooseRace={() => navigate('races')}
           onHowToRegister={() => navigate('register')}
+          selectedRoute={routeDistance}
+          onSelectRoute={selectGuideRoute}
         />
       )}
       {page === 'tribute' && <EventTribute onChooseRace={() => navigate('races')} onOpenGallery={() => navigate('gallery')} />}

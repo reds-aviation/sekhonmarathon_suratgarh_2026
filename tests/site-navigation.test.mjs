@@ -45,6 +45,7 @@ test('old section links resolve to the new page while retaining their anchor', (
     faqs: 'guide',
     contact: 'guide',
     'guide-kit': 'guide',
+    routes: 'guide',
     'race-5': 'races',
     'race-10': 'races',
     'race-21': 'races',
@@ -53,7 +54,7 @@ test('old section links resolve to the new page while retaining their anchor', (
     assert.deepEqual(parseSiteLocation(`#${anchor}`), {
       page,
       portal: null,
-      anchor: anchor === 'faqs' ? 'contact' : anchor,
+      anchor,
     });
   }
   assert.deepEqual(parseSiteLocation('#race%2D10'), {

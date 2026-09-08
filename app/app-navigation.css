@@ -644,8 +644,31 @@
   font-size: 15px;
   max-width: 700px;
 }
-.app-race-detail .app-primary {
+.app-race-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 18px;
+}
+.app-race-detail .app-primary {
+  margin-top: 0;
+}
+.app-route-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 1px solid #6d8b84;
+  border-radius: 5px;
+  color: #205c50 !important;
+  font-size: 14px;
+  font-weight: 650;
+}
+.app-route-link:hover {
+  border-color: #286a60;
+  background: #edf4ef;
 }
 .app-race-kit {
   padding: 25px 0;
@@ -1340,7 +1363,12 @@
     padding: 0 14px 20px;
     font-size: 14px;
   }
-  .app-race-detail .app-primary {
+  .app-race-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-race-detail .app-primary,
+  .app-route-link {
     width: 100%;
   }
   .app-race-kit {
@@ -1547,10 +1575,10 @@
   display: block;
 }
 .app-home-facts small {
-  color: #708078;
-  font-size: 9px;
+  color: #3d554d;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .app-home-facts strong {
@@ -1582,6 +1610,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
   min-height: 54px;
   margin-bottom: 28px;
@@ -1592,6 +1621,12 @@
   color: #31554e;
   font-size: 12px;
   font-weight: 700;
+}
+.registration-path-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
 }
 .registration-path svg {
   flex: 0 0 auto;
@@ -1702,6 +1737,13 @@
   font-family: inherit;
   font-weight: 700;
 }
+.registration-family-note {
+  margin: 19px 0 0 !important;
+  padding-top: 16px;
+  border-top: 1px solid #dbe5dc;
+  color: #40584f;
+  font-size: 13px;
+}
 .registration-payment > p {
   color: #4f6159;
   font-size: 14px;
@@ -1808,6 +1850,22 @@
   padding: 18px;
   border-left: 3px solid #b67446;
   background: #f7f2e9;
+}
+.registration-help-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin: -6px 0 20px;
+  padding: 14px 17px;
+  border-left: 3px solid #286a60;
+  background: #f0f5f1;
+  color: #40584f;
+  font-size: 13px;
+}
+.registration-help-note svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #286a60;
 }
 .registration-certificate-note svg,
 .registration-safety-note svg {
@@ -2067,20 +2125,13 @@
     line-height: 1.45;
   }
   .registration-path {
-    justify-content: flex-start;
-    overflow-x: auto;
-    margin-right: -22px;
-    margin-left: -22px;
-    padding-right: 22px;
-    padding-left: 22px;
-    border-right: 0;
-    border-left: 0;
-    border-radius: 0;
-    white-space: nowrap;
-    scrollbar-width: none;
+    justify-content: center;
+    gap: 7px 8px;
+    padding: 10px 12px;
+    white-space: normal;
   }
-  .registration-path::-webkit-scrollbar {
-    display: none;
+  .registration-path-step {
+    gap: 6px;
   }
   .registration-steps-panel,
   .registration-payment,
@@ -2098,6 +2149,9 @@
     font-size: 15px;
   }
   .registration-timeline p {
+    font-size: 12px;
+  }
+  .registration-family-note {
     font-size: 12px;
   }
   .registration-fees > div {
@@ -2178,5 +2232,16 @@
   }
   .guide-actions button {
     width: 100%;
+  }
+}
+
+@media (max-width: 359px) {
+  .registration-path {
+    gap: 6px;
+    padding: 10px;
+    font-size: 11px;
+  }
+  .registration-path-step {
+    gap: 5px;
   }
 }

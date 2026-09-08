@@ -1,0 +1,23 @@
+.guide-collection-confirmation {
+  margin-top: 15px !important;
+  padding-top: 13px;
+  border-top: 1px solid #c5d5c5;
+  color: #31554e;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.guide-quick-answers h3 {
+  scroll-margin-top: 104px;
+}
+
+.guide-quick-answers strong {
+  color: #173e38;
+  font-size: 1.03em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .guide-collection-confirmation { font-size: 12px; }
+}

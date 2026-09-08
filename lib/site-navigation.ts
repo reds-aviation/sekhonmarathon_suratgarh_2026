@@ -36,6 +36,7 @@ const legacyPages: Record<string, SitePage> = {
   faqs: 'guide',
   contact: 'guide',
   'guide-kit': 'guide',
+  routes: 'guide',
   'race-5': 'races',
   'race-10': 'races',
   'race-21': 'races',
@@ -79,7 +80,7 @@ export function parseSiteLocation(hash = '', search = ''): SiteLocation {
     return {
       page: legacyPages[fragment],
       portal: null,
-      anchor: fragment === 'faqs' ? 'contact' : fragment,
+      anchor: fragment,
     };
   }
   return { page: 'home', portal: null };

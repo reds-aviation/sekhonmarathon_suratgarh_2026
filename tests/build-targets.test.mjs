@@ -204,6 +204,12 @@ void test('the built Pages artifact excludes the retired private app', async (t)
   );
   assert.doesNotMatch(allText, /http:\/\/localhost:3000/u);
 
+  // Essential event guidance remains in the initial document if the app cannot start.
+  assert.match(pagesIndex, /id="static-event-information"/u);
+  assert.match(pagesIndex, /Sekhon Indian Air Force Marathon 2026/u);
+  assert.match(pagesIndex, /5 KM ₹200 · 10 KM ₹250 · 21 KM ₹250/u);
+  assert.match(pagesIndex, /official AFNET portal confirms your registration/iu);
+
   const canary = process.env.U1_BUNDLE_SECRET_CANARY;
   if (canary)
     assert.doesNotMatch(
