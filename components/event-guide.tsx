@@ -137,8 +137,8 @@ export function EventGuide({
         </ul>
         <p>
           All registered participants will receive an event T-shirt and medal.
-          Certificate communication will be issued by the organisers after race
-          completion is confirmed. Use your correct name and email on the
+          Certificate arrangements will be communicated by the organisers after
+          race completion is confirmed. Use your correct name and email on the
           official form.
         </p>
       </section>

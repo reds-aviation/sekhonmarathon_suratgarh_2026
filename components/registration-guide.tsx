@@ -318,9 +318,9 @@ export function RegistrationGuide({
         <div>
           <h2>Digital certificate</h2>
           <p>
-            Enter your name and email carefully on the official form. After
-            race completion is confirmed, the certificate can be sent to that
-            registered email address.
+            Enter your name and email carefully on the official form.
+            Certificate arrangements will be communicated by the organisers
+            after race completion is confirmed.
           </p>
         </div>
       </aside>
