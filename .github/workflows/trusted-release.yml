@@ -1,4 +1,4 @@
-name: Publish static website
+name: Build and publish static website
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: pages
@@ -32,19 +32,20 @@ jobs:
       # The published artifact is the static AFNET guide. Historical backend
       # tests remain available through `pnpm test` but do not govern Pages.
       - run: pnpm run test:public
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist/pages
-
-  deploy-pages:
-    needs: build
-    environment:
-      name: github-pages
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    runs-on: ubuntu-latest
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish the static artifact to gh-pages
+        env:
+          DEPLOY_DIR: ${{ runner.temp }}/sekhon-marathon-pages
+        run: |
+          git fetch origin gh-pages
+          git worktree add --detach "$DEPLOY_DIR" origin/gh-pages
+          rsync --archive --delete --exclude=.git dist/pages/ "$DEPLOY_DIR/"
+          touch "$DEPLOY_DIR/.nojekyll"
+          git -C "$DEPLOY_DIR" config user.name "github-actions[bot]"
+          git -C "$DEPLOY_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$DEPLOY_DIR" add --all
+          if git -C "$DEPLOY_DIR" diff --cached --quiet; then
+            echo "No public-site changes to publish."
+            exit 0
+          fi
+          git -C "$DEPLOY_DIR" commit -m "Publish static AFNET guidance site"
+          git -C "$DEPLOY_DIR" push origin HEAD:gh-pages

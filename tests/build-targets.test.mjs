@@ -130,8 +130,10 @@ void test('both public hosts build the same static public guide', async () => {
     `${releaseWorkflow}\n${verificationWorkflow}`,
     /netlify|supabase|functions:check|build:app|dist\/app/ui,
   );
-  assert.match(releaseWorkflow, /actions\/deploy-pages@v4/u);
-  assert.match(releaseWorkflow, /path: dist\/pages/u);
+  assert.match(releaseWorkflow, /git worktree add --detach/u);
+  assert.match(releaseWorkflow, /rsync --archive --delete/u);
+  assert.match(releaseWorkflow, /push origin HEAD:gh-pages/u);
+  assert.doesNotMatch(releaseWorkflow, /actions\/deploy-pages/u);
   assert.match(netlifyConfig, /command = "pnpm run build:netlify"/u);
   assert.match(netlifyConfig, /publish = "dist\/netlify"/u);
 });
