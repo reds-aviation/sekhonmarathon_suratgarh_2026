@@ -456,7 +456,7 @@
 @media (max-width: 620px) {
   .organiser-payment-portal { padding: 0; }
   .organiser-payment-portal__toolbar { margin: 0; padding: 12px 16px; }
-  .organiser-payment-portal__desk-tabs { width: auto; margin: 0 16px 12px; }
+  .organiser-payment-portal__desk-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: auto; margin: 0 16px 12px; }
   .payment-review-desk { width: 100%; margin: 0; padding: 21px 16px; border-right: 0; border-left: 0; border-radius: 0; }
   .payment-review-desk__header { gap: 13px; }
   .payment-review-desk__header h2 { font-size: 31px; }

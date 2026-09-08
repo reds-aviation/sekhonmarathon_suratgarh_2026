@@ -197,7 +197,7 @@ void test('built artifacts keep Pages public-only and the app root-based', async
   const pagesCodeText = (await readTextTree(pagesOutput, false)).join('\n');
   assert.doesNotMatch(
     pagesCodeText,
-    /@supabase\/supabase-js|supabase\.co|submit-registration|payment-receipts|organiser-payment-proof|payment-review-queue|event-portal|portal-recovery|Payment QR pending|pending_review/ui,
+    /@supabase\/supabase-js|supabase\.co|submit-registration|payment-receipts|organiser-payment-proof|payment-review-queue|event-portal|portal-recovery|get_member_route|publish_member_route|unpublish_member_route|route-timeline-desk|Payment QR pending|pending_review/ui,
   );
   assert.doesNotMatch(pagesText, /http:\/\/localhost:3000/u);
   if (configuredAppUrl)

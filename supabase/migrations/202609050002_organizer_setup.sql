@@ -49,10 +49,12 @@ commit;
 -- The result contains the plaintext code ONCE; only its SHA-256 is persisted.
 -- select * from marathon_private.issue_station_invitation('Station distribution');
 
--- Grant organizer access only after that organizer signs in with verified email.
--- insert into marathon_private.organizers(event_id, user_id)
--- values ('suratgarh-2026', '<VERIFIED-ORGANIZER-AUTH-UUID>'::uuid)
--- on conflict (event_id, user_id) do update set revoked_at = null;
+-- After migration 007, grant an AAL2 verified organizer only the required
+-- capability. Start with event_admin for the initial platform owner; add
+-- narrower desk capabilities separately as needed.
+-- insert into marathon_private.organizer_capabilities(event_id, user_id, capability)
+-- values ('suratgarh-2026', '<VERIFIED-ORGANIZER-AUTH-UUID>'::uuid, 'event_admin')
+-- on conflict (event_id, user_id, capability) do update set revoked_at = null;
 
 -- Configure actual payment details and station contacts before opening.
 -- update public.event_config set

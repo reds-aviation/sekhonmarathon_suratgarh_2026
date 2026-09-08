@@ -17,7 +17,7 @@ The compact guide includes:
 5. A 2025 memories gallery using supplied Suratgarh photographs. The warm-up video is intentionally excluded.
 6. Clear language and consistent typography, including the corrected `Supreme` and `Sacrifice` copy in the Sekhon tribute.
 
-Routes, reporting guidance and payment details stay concise until approved. The route view will become an approved timeline once the station route is finalised.
+Routes, reporting guidance and payment details stay concise until approved. The approved route timeline is now held in the private app: an AAL2 route publisher can release, revise or withdraw it, and only invited participants can view it.
 
 ## Public and secure boundaries
 
@@ -25,9 +25,9 @@ GitHub Pages is only the public guide. It must not serve registration, authentic
 
 The Netlify app will contain sign-in, station-code registration, the participant’s own entry and authorised organiser tools. The preview call to action remains closed until the final Netlify/Supabase configuration and payment details are ready. Its sample QR is visibly marked **YET TO UPDATE** and cannot be used for payment.
 
-The secure release includes three additional guards: migration `012` records a physical T-shirt issue only after verified payment; migration `013` lets an invited participant correct a rejected payment only by creating a new immutable proof and pending-review attempt; migration `014` keeps finish-line completion disabled until an AAL2 completion desk and approved timing settings are deliberately enabled. The Google Sheet remains a one-way private mirror and is never a way to change these records.
+The secure release includes four additional guards: migration `012` records a physical T-shirt issue only after verified payment; migration `013` lets an invited participant correct a rejected payment only by creating a new immutable proof and pending-review attempt; migration `014` keeps finish-line completion disabled until an AAL2 completion desk and approved timing settings are deliberately enabled; migration `015` keeps operational route content out of the public guide and limits it to invited members after a route publisher releases it. The Google Sheet remains a one-way private mirror and is never a way to change these records.
 
-Before any secure-app deployment, apply migrations `001`–`014` in staging, create the final HTTPS Netlify origin, and set Supabase Edge Function `SITE_ORIGIN` to exactly that origin with no path, query, fragment, credentials or wildcard. Then deploy `submit-registration`, `correct-payment`, `organiser-payment-proof`, `drive-register` and `certificate`, test their origin and sign-in denials, and only then rehearse the app. The Pages guide cannot be used as `SITE_ORIGIN`.
+Before any secure-app deployment, apply migrations `001`–`015` in staging, create the final HTTPS Netlify origin, and set Supabase Edge Function `SITE_ORIGIN` to exactly that origin with no path, query, fragment, credentials or wildcard. Then deploy `submit-registration`, `correct-payment`, `organiser-payment-proof`, `drive-register` and `certificate`, test their origin and sign-in denials, and only then rehearse the app. The Pages guide cannot be used as `SITE_ORIGIN`.
 
 ## Responsive checks to retain
 

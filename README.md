@@ -24,7 +24,7 @@ The public guide is currently live. The secure app is not yet activated because 
 | 21 KM fee | ₹499 |
 | T-shirt collection | Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station |
 | Contact | 8838463776 · 7027964880 |
-| Route | To be published after station approval |
+| Route | Released only to invited participants after station approval |
 
 Race timing, route geometry, registration opening and payment acceptance all remain closed until their operational inputs are approved. A participant can never use the preview QR as proof of payment.
 
@@ -73,19 +73,20 @@ Copy `.env.example` to `.env.local` for local work. `VITE_SUPABASE_URL` and `VIT
 
 ## Activation sequence
 
-1. Create a new Supabase project and apply migrations `001` through `014` in order to a staging project first, then production. Migrations `012`, `013` and `014` add the T-shirt issue ledger, immutable rejected-payment correction, and capability-gated race-day completion workflow. They keep collection and completion closed unless explicitly enabled.
+1. Create a new Supabase project and apply migrations `001` through `015` in order to a staging project first, then production. Migrations `012`, `013` and `014` add the T-shirt issue ledger, immutable rejected-payment correction, and capability-gated race-day completion workflow. Migration `015` adds the private member route timeline. Collection, completion and route publication remain closed until explicitly enabled.
 2. Create the final Netlify site, then configure verified email sign-in, disable anonymous sign-in and configure production mail delivery. Set the Supabase Site URL and allowed redirect URLs to the final HTTPS **Netlify app** address, not the GitHub Pages guide.
 3. Set `VITE_APP_URL`, `VITE_AUTH_REDIRECT_URL`, `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the protected Netlify/GitHub production environment. The Pages build must receive the final Netlify URL only for its secure-app handoff.
 4. Before deploying browser-facing functions, set Supabase Edge Function `SITE_ORIGIN` to exactly that single HTTPS Netlify origin, for example `https://marathon.example.net`. It must have no path, query, fragment, credentials or wildcard. Do not use the Pages URL or a localhost URL. Set `DRIVE_MIRROR_HMAC_SECRET` separately in Supabase and the private Apps Script.
 5. Deploy the function set after migrations: `submit-registration`, `correct-payment`, `organiser-payment-proof`, `drive-register` and `certificate`. Rehearse the functions with staging identities before configuring the private Drive mirror. The function runtime service-role key stays only in Supabase; it is never a browser or Netlify `VITE_` value.
-6. Create the station invitation-code process and grant organiser capabilities only to confirmed organiser accounts. Enrol organisers in MFA before enabling any organiser capability. There is no self-enrolment path for organisers.
+6. Create the station invitation-code process and grant organiser capabilities only to confirmed organiser accounts. Enrol organisers in MFA before enabling any organiser capability. There is no self-enrolment path for organisers. Use the owner-only issuer to generate a fresh station code at activation; do not reuse a code shared in chat or place one in source control.
 7. Create the private Sheet and receipt folder, set the Apps Script properties, and test a one-way synthetic sync. Test participant isolation, short-lived proof access, duplicate UTR rejection, rejected-payment correction, review audit records, T-shirt issue/void audit records and Sheets updates.
 8. Supply the final payee name, UPI ID and QR image. Update `event_config` only after the QR has been independently checked. Then set `payment_configured=true` and `registration_open=true` together through the approved owner procedure.
-9. Rehearse a full phone and laptop flow with non-production accounts: email sign-in, invitation code, registration, screenshot upload, correction after rejection, organiser review, T-shirt collection and void recovery, completion-desk enablement, results review and certificate access. Only then invite participants.
+9. Have an AAL2 `route_publisher` rehearse saving, publishing, updating and withdrawing a synthetic route. Confirm that an invited member can view it and a non-member cannot. Enter the approved operational timeline only in the private route workspace.
+10. Rehearse a full phone and laptop flow with non-production accounts: email sign-in, invitation code, registration, screenshot upload, correction after rejection, organiser review, T-shirt collection and void recovery, completion-desk enablement, results review and certificate access. Only then invite participants.
 
 ## Race-day and collection operation
 
-The app is designed for organiser-managed clocks and finish records; it does not claim chip timing. The final route should be published as an approved visual timeline only after route details, control points and reporting guidance are confirmed. Race-day completion is disabled by default. It requires both approved timing and completion-desk settings, an AAL2 `completion_desk` capability, a verified payment, an idempotent request and the current result revision. An AAL2 `event_admin` separately reviews or locks a recorded result before certificate release.
+The app is designed for organiser-managed clocks and finish records; it does not claim chip timing. The final route is held in the private app and released as an approved timeline only to invited participants after route details, control points and reporting guidance are confirmed. An AAL2 `route_publisher` can publish, revise or withdraw it with an audit trail. Race-day completion is disabled by default. It requires both approved timing and completion-desk settings, an AAL2 `completion_desk` capability, a verified payment, an idempotent request and the current result revision. An AAL2 `event_admin` separately reviews or locks a recorded result before certificate release.
 
 For collection, organisers will work from the private, verified-payment list and record the requested/issued T-shirt size at the designated desk on 3 October. This must remain an authenticated organiser action, with an audit trail and a clear exception note for any size change.
 

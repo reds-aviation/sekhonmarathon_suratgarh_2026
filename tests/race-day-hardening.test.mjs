@@ -12,6 +12,7 @@ const ids = {
   eventAdmin: '00000000-0000-4000-8000-000000000905',
   legacyOnly: '00000000-0000-4000-8000-000000000906',
   unverified: '00000000-0000-4000-8000-000000000907',
+  routePublisher: '00000000-0000-4000-8000-000000000908',
 };
 
 const requestIds = {
@@ -117,6 +118,7 @@ async function fixture() {
     '202609070012_tshirt_collections.sql',
     '202609070013_payment_corrections.sql',
     '202609070014_race_day_hardening.sql',
+    '202609070015_member_route_timeline.sql',
   ]) {
     await db.exec(await readMigration(migration));
   }
@@ -135,7 +137,13 @@ async function fixture() {
     event_id,user_id,capability,granted_by
   ) values
     ($1,$2,'completion_desk',$2),
-    ($1,$3,'event_admin',$3)`, [eventId, ids.completionDesk, ids.eventAdmin]);
+    ($1,$3,'event_admin',$3),
+    ($1,$4,'route_publisher',$4)`, [
+    eventId,
+    ids.completionDesk,
+    ids.eventAdmin,
+    ids.routePublisher,
+  ]);
   // This row is intentionally added after 007's compatibility seed. It must
   // never regain certificate authority merely by appearing in the old table.
   await q(`insert into marathon_private.organizers(event_id,user_id) values($1,$2)`, [eventId, ids.legacyOnly]);
@@ -213,7 +221,7 @@ async function fixture() {
   };
 }
 
-test('race-day completion cutover is capability-gated, private and revision-safe', async t => {
+void test('race-day completion cutover is capability-gated, private and revision-safe', async t => {
   const [migrationSource, certificateFunction] = await Promise.all([
     readMigration('202609070014_race_day_hardening.sql'),
     readFile(new URL('../supabase/functions/certificate/index.ts', import.meta.url), 'utf8'),
@@ -248,6 +256,109 @@ test('race-day completion cutover is capability-gated, private and revision-safe
       () => completionQueue(ids.completionDesk, aal2),
       'Completion desk is not enabled',
     );
+  });
+
+  await t.test('member route timelines stay invitation-gated, private and revision-safe', async () => {
+    const timeline = {
+      start: 'Synthetic station start',
+      distances: [
+        { distance: '5', steps: ['First marked point', 'Return to start'] },
+        { distance: '10', steps: ['First marked point', 'Further point', 'Return to start'] },
+        { distance: '21', steps: ['First marked point', 'Further point', 'Final turn-around', 'Return to start'] },
+      ],
+      notice: 'Follow the directions of race marshals at all times.',
+    };
+    const publish = (actor, claims, expectedRevision, requestId = crypto.randomUUID()) => as(
+      'authenticated', actor, claims, () => scalar(
+        'select public.publish_member_route($1,$2::jsonb,$3,$4)',
+        [eventId, JSON.stringify(timeline), expectedRevision, requestId],
+      ),
+    );
+
+    const unavailable = await as('authenticated', ids.owner, aal1, () => scalar(
+      'select public.get_member_route($1)', [eventId],
+    ));
+    assert.deepEqual(unavailable, { published: false });
+    await rejects(
+      () => publish(ids.routePublisher, aal1, 0),
+      'Multi-factor authentication',
+    );
+    const publishRequestId = crypto.randomUUID();
+    const published = await publish(ids.routePublisher, aal2, 0, publishRequestId);
+    assert.equal(published.published, true);
+    assert.equal(published.revision, 1);
+    const publishedReplay = await publish(ids.routePublisher, aal2, 0, publishRequestId);
+    assert.deepEqual(publishedReplay, published);
+    await rejects(
+      () => publish(ids.routePublisher, aal2, 1, publishRequestId),
+      'does not match its original action',
+    );
+
+    const publication = await as('authenticated', ids.routePublisher, aal2, () => scalar(
+      'select public.get_route_publication($1)', [eventId],
+    ));
+    assert.equal(publication.revision, 1);
+    assert.equal(publication.timeline.start, timeline.start);
+
+    const route = await as('authenticated', ids.owner, aal1, () => scalar(
+      'select public.get_member_route($1)', [eventId],
+    ));
+    assert.equal(route.published, true);
+    assert.equal(route.revision, 1);
+    assert.equal(route.timeline.start, timeline.start);
+    assert.equal(route.timeline.distances.length, 3);
+
+    await as('authenticated', ids.unverified, aal1, () => rejects(
+      () => scalar('select public.get_member_route($1)', [eventId]),
+      'verified email',
+    ));
+    await as('authenticated', ids.owner, aal1, () => rejects(
+      () => q('select * from marathon_private.member_route_timeline'),
+      'permission denied',
+    ));
+    await as('authenticated', ids.owner, aal1, () => rejects(
+      () => q('select * from marathon_private.member_route_requests'),
+      'permission denied',
+    ));
+    await as('authenticated', ids.owner, aal2, () => rejects(
+      () => scalar('select public.get_route_publication($1)', [eventId]),
+      'active organiser capability',
+    ));
+    await as('authenticated', ids.routePublisher, aal2, () => rejects(
+      () => publish(ids.routePublisher, aal2, 0),
+      'Route timeline has changed',
+    ));
+    await as('authenticated', ids.routePublisher, aal2, () => rejects(
+      () => scalar('select public.publish_member_route($1,$2::jsonb,$3,$4)', [
+        eventId,
+        JSON.stringify({ distances: [] }),
+        1,
+        crypto.randomUUID(),
+      ]),
+      'Route start is required',
+    ));
+    const unpublishRequestId = crypto.randomUUID();
+    const unpublished = await as('authenticated', ids.routePublisher, aal2, () => scalar(
+      'select public.unpublish_member_route($1,$2,$3)',
+      [eventId, 1, unpublishRequestId],
+    ));
+    assert.equal(unpublished.published, false);
+    assert.equal(unpublished.revision, 2);
+    const unpublishedReplay = await as('authenticated', ids.routePublisher, aal2, () => scalar(
+      'select public.unpublish_member_route($1,$2,$3)',
+      [eventId, 1, unpublishRequestId],
+    ));
+    assert.deepEqual(unpublishedReplay, unpublished);
+    const hidden = await as('authenticated', ids.owner, aal1, () => scalar(
+      'select public.get_member_route($1)', [eventId],
+    ));
+    assert.deepEqual(hidden, { published: false });
+    const editableDraft = await as('authenticated', ids.routePublisher, aal2, () => scalar(
+      'select public.get_route_publication($1)', [eventId],
+    ));
+    assert.equal(editableDraft.published, false);
+    assert.equal(editableDraft.revision, 2);
+    assert.equal(editableDraft.timeline.start, timeline.start);
   });
 
   await q(`update marathon_private.event_day_settings

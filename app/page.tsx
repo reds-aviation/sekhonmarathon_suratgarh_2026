@@ -67,6 +67,13 @@ const OrganiserRaceCompletionDesk = isPublicGuide
         default: module.OrganiserRaceCompletionDesk,
       })),
     );
+const OrganiserRouteTimelineDesk = isPublicGuide
+  ? null
+  : lazy(() =>
+      import('@/components/organiser/route-timeline-desk').then((module) => ({
+        default: module.OrganiserRouteTimelineDesk,
+      })),
+    );
 const titles: Record<SitePage, string> = {
   home: 'Sekhon IAF Marathon 2026',
   races: 'Choose your race',
@@ -86,7 +93,7 @@ export default function Home() {
   const [selected, setSelected] = useState<string | null>(null);
   const [policy, setPolicy] = useState<string | null>(null);
   const [organiserDesk, setOrganiserDesk] = useState<
-    'payments' | 'tshirts' | 'completion'
+    'payments' | 'tshirts' | 'completion' | 'route'
   >('payments');
   const [expandedRace, setExpandedRace] = useState<string | null>(
     initial.anchor?.startsWith('race-') ? initial.anchor.slice(5) : null,
@@ -308,24 +315,31 @@ export default function Home() {
               >
                 Completion desk
               </button>
+              <button
+                aria-controls="organiser-route-desk"
+                aria-selected={organiserDesk === 'route'}
+                onClick={() => setOrganiserDesk('route')}
+                role="tab"
+                type="button"
+              >
+                Route timeline
+              </button>
             </div>
             {organiserDesk === 'payments' ? (
               <div id="organiser-payment-desk" role="tabpanel">
                 <OrganiserPaymentReviewQueue />
               </div>
-            ) : OrganiserTshirtCollectionDesk ? (
-              organiserDesk === 'tshirts' ? (
-                <div id="organiser-tshirt-desk" role="tabpanel">
-                  <OrganiserTshirtCollectionDesk />
-                </div>
-              ) : OrganiserRaceCompletionDesk ? (
-                <div id="organiser-completion-desk" role="tabpanel">
-                  <OrganiserRaceCompletionDesk />
-                </div>
-              ) : null
-            ) : OrganiserRaceCompletionDesk ? (
+            ) : organiserDesk === 'tshirts' && OrganiserTshirtCollectionDesk ? (
+              <div id="organiser-tshirt-desk" role="tabpanel">
+                <OrganiserTshirtCollectionDesk />
+              </div>
+            ) : organiserDesk === 'completion' && OrganiserRaceCompletionDesk ? (
               <div id="organiser-completion-desk" role="tabpanel">
                 <OrganiserRaceCompletionDesk />
+              </div>
+            ) : organiserDesk === 'route' && OrganiserRouteTimelineDesk ? (
+              <div id="organiser-route-desk" role="tabpanel">
+                <OrganiserRouteTimelineDesk />
               </div>
             ) : null}
           </main>

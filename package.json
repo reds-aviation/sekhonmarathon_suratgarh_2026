@@ -18,7 +18,7 @@
     "test:targets": "node --test tests/build-targets.test.mjs",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
     "lint": "node ./node_modules/oxlint/bin/oxlint",
-    "lint:platform": "node ./node_modules/oxlint/bin/oxlint app/page.tsx app/client.tsx app/pwa.ts vite.pages.config.ts lib/race-data.ts lib/registration-contract.ts tests/build-targets.test.mjs tests/event-discovery.test.mjs tests/event-day-sql.test.mjs tests/pwa.test.mjs tests/no-bib-language.test.mjs tests/organiser-roles.test.mjs tests/payment-attempts.test.mjs tests/race-data.test.mjs tests/registration-contract.test.mjs",
+    "lint:platform": "node ./node_modules/oxlint/bin/oxlint app/page.tsx app/client.tsx app/pwa.ts vite.pages.config.ts lib/race-data.ts lib/registration-contract.ts components/member-route-timeline.tsx components/organiser/route-timeline-desk.tsx tests/build-targets.test.mjs tests/event-discovery.test.mjs tests/event-day-sql.test.mjs tests/member-route-timeline-ui.test.mjs tests/pwa.test.mjs tests/no-bib-language.test.mjs tests/organiser-roles.test.mjs tests/payment-attempts.test.mjs tests/race-day-hardening.test.mjs tests/race-data.test.mjs tests/registration-contract.test.mjs",
     "format": "node ./node_modules/oxfmt/bin/oxfmt",
     "functions:check": "pnpm dlx deno@2.3.3 check --config supabase/functions/certificate/deno.json supabase/functions/submit-registration/index.ts supabase/functions/correct-payment/index.ts supabase/functions/drive-register/index.ts supabase/functions/certificate/index.ts supabase/functions/organiser-payment-proof/index.ts"
   },

@@ -1,6 +1,6 @@
 # Proposed Suratgarh marathon backend
 
-This is a reviewable design for a **new Supabase project**. It has not been deployed. All files are in `work/backend-design`; no Site files were touched.
+This is the original reviewable design for the foundation of a **new Supabase project**. It has not been deployed. The current release extends it through migrations `006`–`015`; use the activation sequence in the repository README for the complete production order.
 
 ## Files and validation
 
@@ -9,14 +9,14 @@ This is a reviewable design for a **new Supabase project**. It has not been depl
 - `validate-schema.mjs`: actual PostgreSQL execution through PGlite with mock Supabase Auth and Storage schemas.
 - `validation-report.json`: 23 passing focused checks; includes the test limitations.
 
-Run both SQL files as the project owner (`postgres`). The scripts are rerunnable on this proposed schema: they preserve event/race seed data and replace their own functions, triggers and policies. They are not an upgrade migration for an arbitrary existing schema with different columns or constraints. Never expose `marathon_private` in Data API settings. Do not publish the test fixtures or install its PGlite dependency in the frontend.
+The two foundation files are useful for design review. Production activation applies the complete ordered migration chain `001`–`015` as the project owner, first in staging. The foundation scripts preserve event/race seed data and replace their own functions, triggers and policies; they are not an upgrade migration for an arbitrary existing schema with different columns or constraints. Never expose `marathon_private` in Data API settings. Do not publish the test fixtures or install its PGlite dependency in the frontend.
 
 ## Frontend and Edge Function contract
 
 Public read-only tables:
 
 - `event_config`: singleton row `id = 'suratgarh-2026'`; `registration_open = false`, `payment_configured = false`; `event_starts_at = 2026-10-04T05:00:00+05:30`; `registration_deadline = 2026-09-27T23:59:59+05:30`; nullable `payment_qr_url`, `payee_name`, `upi_id`, `contact_phone`, `contact_email`.
-- `race_config`: `event_id`, `race`, `fee_paise`; race keys `5`, `10`, `21`, with trusted fees 39900, 89900, 89900 paise. Both tables grant anonymous/authenticated SELECT only.
+- `race_config`: `event_id`, `race`, `fee_paise`; race keys `5`, `10`, `21`. Migration `006` sets the confirmed fees to 39900, 49900 and 49900 paise. Both tables grant anonymous/authenticated SELECT only.
 
 Authenticated RPCs:
 
@@ -31,7 +31,8 @@ const { data, error } = await supabase.rpc('redeem_invitation', {
 const { data: membership } = await supabase.rpc('get_my_membership', {
   p_event_id: 'suratgarh-2026',
 });
-// { is_member: boolean, is_organizer: boolean }
+// `is_organizer` is an AAL2 event-admin compatibility summary only.
+// It does not grant any payment, collection, completion or route operation.
 ```
 
 Redemption success codes: `membership_granted`, `already_member`. Failure codes: `authentication_required`, `verified_email_required`, `event_unavailable`, `contact_organizer`, `invalid_invitation`, `rate_limited`. The last includes `retry_after_seconds`. Five wrong codes within 15 minutes cause a 15-minute cooldown. The account row lock serializes concurrent calls; expected failure paths return JSON so their counter updates commit. An unknown event never compares a secret code. Already granted members can see their own membership regardless of the current code. Revoked members cannot self-restore.
@@ -60,14 +61,18 @@ The backend must:
 
 Storage and database insertion are separate transactions. Before launch, test simultaneous retries. An orphan sweep may be needed after a function crash; it must avoid in-progress/referenced objects and use the Storage API, not direct object-row deletion. User IDs plus submission UUIDs make paths unambiguous but do not themselves authorize access.
 
-`registrations` is in `public` for service-role REST access, with RLS-private rows. Owners can SELECT their own rows; organizer users can SELECT all event rows. Browser clients cannot write registrations. Organizer review must also go through an authenticated backend that verifies `is_organizer`, derives `reviewed_by` from the verified caller, and updates only review fields. The DB permits only `pending_review -> verified/rejected`. Successful submission means pending review, not confirmed payment.
+`registrations` is in `public` for service-role REST access, with RLS-private rows. Owners can SELECT their own rows. An AAL2 `event_admin` has a compatibility summary path, while payment, collection, completion and route work use their separate capability-checked operations; desk users do not receive broad direct registration access. Browser clients cannot write registrations. The DB permits only `pending_review -> verified/rejected`. Successful submission means pending review, not confirmed payment.
+
+## Member route timeline
+
+Migration `015` keeps operational route data in a private table. A verified active member can read only a published timeline through the narrow member RPC. An AAL2 `route_publisher` or `event_admin` can save, publish, revise or withdraw it through revision-checked, retry-safe and audited operations. GitHub Pages has no route endpoint or route content.
 
 ## Organizer setup
 
 1. Allow new email Auth sign-ups; require email confirmation; disable anonymous sign-ins. Use a custom SMTP provider. For numerical email OTP instead of a magic link, configure the mail template to send `{{ .Token }}`. Confirm exact production redirect/site URLs.
-2. Apply the two SQL files. Keep the private schema unexposed and the `payment-receipts` bucket private. On a new project there should be no broad existing Storage policies granting user writes or unrelated reads; permissive RLS policies combine with OR.
+2. Apply the full ordered migration chain `001`–`015`, first in staging. Keep the private schema unexposed and the `payment-receipts` bucket private. On a new project there should be no broad existing Storage policies granting user writes or unrelated reads; permissive RLS policies combine with OR.
 3. Deploy the Edge Function with backend-only secret credentials and caller authentication. The frontend receives only Supabase URL and publishable key. No station code, code hash, service key or SMTP secret belongs in a frontend environment variable or Git repository.
-4. Have organizers sign in, then add their verified Auth UUIDs to `marathon_private.organizers` using the commented SQL template. This role is never taken from client-editable user metadata.
+4. Have organisers sign in, verify their email and enrol MFA, then grant their verified Auth UUIDs explicit capabilities in `marathon_private.organizer_capabilities`. The first platform owner may receive `event_admin`; desk staff receive only the required capability. No role is taken from client-editable user metadata.
 5. Run `select * from marathon_private.issue_station_invitation('Station distribution');` in SQL Editor when ready. It generates a UUID-derived random 122-bit code and stores SHA-256 only; copy the one-time plaintext result into the approved station distribution channel. Do not commit the returned code or log redemption payloads. Rotation revokes previous codes, **not memberships already granted**.
 6. Add the real QR URL, verified payee name/UPI ID and station contacts, then set `payment_configured` and `registration_open` true. An expired deadline still blocks registration even if the open flag remains true.
 

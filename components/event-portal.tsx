@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
+import { MemberRouteTimeline } from '@/components/member-route-timeline';
 import {
   formatFinishTime,
   parseFinishTime,
@@ -648,6 +649,7 @@ export function EventPortal({
                 <RefreshCw size={15} /> Refresh
               </button>
             </div>
+            <MemberRouteTimeline />
             <section className="portal-panel">
               <h3>My registrations</h3>
               {snapshot.registrations.length === 0 ? (
