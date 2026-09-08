@@ -27,7 +27,8 @@ void test('shared links identify the current Suratgarh event without overstating
   assert.ok(schemaText, 'event schema must be present');
   const schema = JSON.parse(schemaText);
   assert.equal(schema['@type'], 'SportsEvent');
-  assert.equal(schema.startDate, '2026-10-04T05:00:00+05:30');
+  assert.equal(schema.startDate, '2026-10-04');
+  assert.equal(schema.endDate, undefined);
   assert.equal(schema.location.name, 'Air Force Station Suratgarh');
   assert.equal(schema.url, '__SITE_URL__');
 });
@@ -40,30 +41,29 @@ void test('installed-app shortcuts and calendar downloads retain the confirmed e
     manifest.shortcuts.map(({ url }) => url),
     [
       './#races',
-      './#guide',
+      './#register',
     ],
   );
 
   const calendar = await readFile(
     new URL('public/sekhon-marathon-2026.ics', root),
   );
-  assert.equal(
-    calendar.toString('utf8').replaceAll('\r\n', '').includes('\n'),
-    false,
-    'calendar must not contain lone LF line endings',
-  );
+  const calendarLines = calendar.toString('utf8').replaceAll('\r\n', '\n').split('\n');
   assert.ok(
-    calendar
-      .toString('utf8')
-      .split('\r\n')
-      .every((line) => Buffer.byteLength(line, 'utf8') <= 75),
+    calendarLines.every((line) => Buffer.byteLength(line, 'utf8') <= 75),
     'calendar lines must remain within the iCalendar folding limit',
   );
   const text = calendar.toString('utf8').replace(/\r\n /g, '');
   assert.match(text, /DTSTART:20261003T033000Z/);
   assert.match(text, /DTEND:20261003T080000Z/);
-  assert.match(text, /DTSTART:20261003T233000Z/);
-  assert.match(text, /DTEND:20261004T043000Z/);
+  assert.match(text, /DTSTART;VALUE=DATE:20261004/);
+  assert.match(text, /DTEND;VALUE=DATE:20261005/);
+  assert.doesNotMatch(text, /Race day runs from/);
+  assert.doesNotMatch(
+    text,
+    /reds-aviation\.github/u,
+    'the downloadable calendar must remain host-neutral for GitHub Pages and Netlify',
+  );
   assert.match(
     text,
     /In front of SBI Bank\\, inside Air Force Station Suratgarh/,

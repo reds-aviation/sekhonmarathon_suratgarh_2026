@@ -7,7 +7,14 @@ import {
 } from '../lib/site-navigation.ts';
 
 test('page fragments round-trip without depending on a hosting base path', () => {
-  for (const page of ['home', 'races', 'guide', 'tribute', 'gallery']) {
+  for (const page of [
+    'home',
+    'races',
+    'register',
+    'guide',
+    'tribute',
+    'gallery',
+  ]) {
     assert.equal(hashForPage(page), `#${page}`);
     assert.deepEqual(parseSiteLocation(hashForPage(page)), {
       page,
@@ -34,6 +41,7 @@ test('old section links resolve to the new page while retaining their anchor', (
     running: 'tribute',
     event: 'tribute',
     'race-day': 'guide',
+    'how-to-register': 'register',
     faqs: 'guide',
     contact: 'guide',
     'guide-kit': 'guide',

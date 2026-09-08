@@ -1,62 +1,103 @@
-# Suratgarh station identity and platform plan
+# Suratgarh station website plan
 
 ## Purpose
 
-Build a polished, mobile-first Sekhon Indian Air Force Marathon experience for **Air Force Station Suratgarh — Desert Braves, The Land of Sun and Sand**. The public story should bring forward a liveable desert station, its tree-lined regional landscape, the Indian Air Force and the legacy of Fg Offr Nirmal Jit Singh Sekhon, PVC. It must remain clear that any illustrative station artwork is not an official route map.
+Publish a polished, mobile-first Sekhon Indian Air Force Marathon guide for **Air Force Station Suratgarh — Desert Braves, The Land of Sun and Sand**. The page should help eligible airwarriors and families understand the event, choose a distance, complete the official internal registration process and arrive prepared.
 
-The event is for airwarriors and their families. Race day is Sunday, 4 October 2026. Confirmed fees are ₹399 for 5 KM and ₹499 for 10 KM and 21 KM. Operational route data remains private until station approval.
+The public website is an information and guidance layer. Registration and payment confirmation remain on the organisation's existing AFNET system, whose internal Excel export is the administrative source of truth.
 
-## Product split
+## Confirmed product boundary
 
-1. **GitHub Pages public guide**: event identity, race information, gallery, story, contact details, collection information and a link to the secure app.
-2. **Netlify secure app**: verified-email sign-in, station invitation-code access, registration, payment screenshot submission, participant race desk and organiser operations.
-3. **Supabase**: private database, Auth, private receipt storage, capability enforcement, audit records and the source of truth for event data.
-4. **Private Google Drive/Sheet mirror**: operational reporting and analysis only. It does not make payment decisions or modify Supabase records.
+| Surface | Responsibility |
+| --- | --- |
+| GitHub Pages / Netlify website | Public event information, race fees, AFNET registration instructions, payment guidance, generic route timelines, collection information, contacts and event storytelling. |
+| AFNET registration system | Official participant registration and payment-confirmation entry. |
+| Internal Excel export | Participant administration, payment reconciliation, T-shirt and medal planning, and post-race completion records. |
+| Private certificate workflow (later phase) | To be configured separately after race day from the approved internal export; it is not included in this public release. |
 
-This split keeps public event discovery fast and simple while keeping personal data, payment proof and organiser tools off the public site.
+The GitHub Pages site must not contain a public registration form, authentication, participant lookup, payment screenshot upload, transaction-reference collection or organiser dashboard.
 
-## Experience priorities
+## Current event facts
 
-- Make Air Force Station Suratgarh the visible host, with Desert Braves as the supporting event identity.
-- Use navy, ivory, desert gold and restrained green to reflect aviation heritage, sunlight and a maintained desert station.
-- Use supplied poster art and historical/event photographs as intentional editorial moments rather than repeated decorative backgrounds. Keep important text in HTML, not embedded only in an image.
-- Keep the phone home screen concise. Put the heritage story, gallery, event guide and member-only route timeline on focused views.
-- State clearly that the audience is airwarriors and families only, the payment QR is still being updated, and routes will follow station approval.
-- Use direct contact numbers for questions: 8838463776 and 7027964880.
-- Display T-shirt collection information prominently: Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station.
+- Race day: Sunday, 4 October 2026.
+- Registration deadline: Sunday, 27 September 2026.
+- Audience: airwarriors and their families.
+- Fees: ₹200 for 5 KM; ₹250 for 10 KM; ₹250 for 21 KM.
+- Payment: SI POS machine at Sports Section.
+- All registered participants will receive an event T-shirt and medal.
+- T-shirt collection: Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station.
+- Contacts: 8838463776 and 7027964880.
+- Reporting and flag-off timings: to be announced after approval.
 
-## Secure workflow
+## Information architecture
 
-1. Participant signs in with a verified email and enters a station invitation code.
-2. Participant selects 5 KM, 10 KM or 21 KM at the confirmed fee and submits the required registration data in the Netlify app.
-3. After real payment details are activated, the participant enters the UPI reference and uploads a screenshot to private storage. The payment starts as pending review.
-4. An organiser with a verified email, MFA at AAL2 and the relevant capability reviews the evidence against the bank/UPI record. Each action is revision-checked and audited.
-5. A rejected payment can be corrected only by the verified, invited owner. The original proof and decision remain immutable; a fresh UTR and screenshot create a separate pending-review payment attempt.
-6. The participant sees only their own status. Organisers use the private desk and one-way Drive/Sheet mirror for payment follow-up, T-shirt counts and collection analysis.
-7. The collection desk records distribution from the verified-payment list in a separate audit ledger. Race-day completion and certificates remain disabled until the approved operating settings, roles and rehearsal are in place.
+### Home
 
-## Delivery order
+Lead with the Desert Braves identity, Air Force Station Suratgarh, date, eligible audience and one primary **How to register** action. Keep the first phone screen concise. Race cards should show the distance and current fee at a glance.
 
-1. Maintain the public-guide and secure-app build separation, including a target test that prevents private app code from entering the Pages bundle.
-2. Configure a staging Supabase project and apply migrations `001`–`015` in order. Migrations `012`, `013` and `014` add the audited T-shirt issue ledger, immutable rejected-payment correction and capability-gated race-day completion workflow. Migration `015` adds the private member route timeline. Verify participant privacy, invitation membership, payment evidence, correction history, AAL2 capability denials, route publication, audit records and the one-way Drive mirror.
-3. Create the final HTTPS Netlify app origin, configure it in Supabase Auth, and set Supabase Edge Function `SITE_ORIGIN` to exactly that origin with no path, query, fragment, credentials or wildcard. The Pages guide must link to the app but is never that origin.
-4. After migrations and `SITE_ORIGIN` are configured, deploy `submit-registration`, `correct-payment`, `organiser-payment-proof`, `drive-register` and `certificate`. Keep service-role credentials and `DRIVE_MIRROR_HMAC_SECRET` out of browser variables and the public repository.
-5. Build the secure organiser payment queue, short-lived screenshot viewer and one-way Google mirror. The mirror must export payment attempts by revision and authorise receipt copies by payment-attempt ID. Remove the historical Sheets payment-review publisher before any live sync.
-6. Use the T-shirt collection desk only for registrations whose payment summary and verified payment attempt agree. Record an issued-size change with its reason; reserve a void for an AAL2 event administrator with the issue’s current revision and a reason.
-7. Keep race-day completion disabled until the timing plan is approved and rehearsed. Once enabled, require AAL2 `completion_desk` access, verified payment, an idempotent request and an expected result revision; reserve result review or locking for AAL2 `event_admin`.
-8. Add the approved route timeline in the protected publisher desk after route details are final. Do not place operational route locations or timings in the public guide or repository.
-9. Rehearse every flow on phone and laptop using synthetic accounts and receipts, including a rejected-payment correction, T-shirt collection/void recovery and the disabled-to-enabled race-day transition. Configure real payment details only after that rehearsal.
-10. Activate registration only when the final Netlify URL, Supabase/Auth settings, invitation-code process, organiser MFA, payee name, UPI ID and verified QR image are ready.
+### Races
 
-## Information still required before activation
+Use one compact card per distance. Explain who each distance suits, the fee and the shared participant benefits. Every race action should lead to the same internal-registration guide.
 
-- Final Netlify HTTPS app URL.
-- Supabase project credentials and Auth redirect configuration.
-- Supabase Edge Function `SITE_ORIGIN`, set to the exact final Netlify origin, and the private Drive mirror secret configuration.
-- Real payee name, UPI ID and QR image.
-- Verified organiser email addresses and their required capabilities.
-- Station invitation-code circulation and revocation procedure.
-- Approved routes, reporting points, control points and safety instructions.
-- Approved certificate signer and certificate assets, if certificates will be released.
+### How to register
 
-Until these are supplied, the secure app remains closed and the QR stays a labelled placeholder.
+Show the official process as a numbered visual sequence:
+
+1. Use an AFNET-connected system.
+2. Open AFND at `www.afnd.iaf.in`.
+3. Open the Sekhon Marathon Registration pop-up.
+4. Select HQ WAC.
+5. Open and complete the official registration form.
+6. Pay through the SI POS machine at Sports Section.
+7. Enter payment-confirmation details in the official portal.
+
+Display the AFNET address as text, not as a public hyperlink. Add a browser-only Yes/No readiness guide for “Registered internally?” and “Payment completed?”. It may reveal the relevant next instruction, but it must not save or transmit the answer.
+
+### Event guide
+
+Keep the practical information task-based: important dates, payment, T-shirt collection, what participants receive, hydration and refreshments, announcements, short practical answers and contact numbers.
+
+### Route overview
+
+Use a simplified timeline for each distance. Show shared start, outward progression, distance turnaround, return and finish. Keep internal station location names, control points and sensitive operational details out of public code and artwork. Label the graphic as an overview and direct participants to the official station brief and marshals for the final course.
+
+### Heritage and gallery
+
+Keep the Sekhon tribute and organiser-supplied event photographs on focused views. Use the station artwork as an editorial identity element and state that it is an artistic impression rather than a route map or flypast announcement.
+
+## Visual and interaction direction
+
+- Give Air Force Station Suratgarh the strongest visual prominence, supported by Desert Braves.
+- Retain deep navy, ivory, warm desert gold and restrained green.
+- Keep essential text in HTML so it remains readable and accessible on phones.
+- Use supplied poster art and historical photographs as selected editorial moments, not repeated backgrounds.
+- Use one clear primary action per view and at least 44-pixel touch targets.
+- Prefer short cards, timelines and progressive disclosure over long paragraphs.
+- Preserve keyboard focus, useful alternative text, strong colour contrast and reduced-motion behaviour.
+
+## Certificate workflow
+
+Certificate email processing is deferred from this release. After race completion, organisers may configure a separate private workflow using the final internal workbook as the single source for certificate identity, email, race category, payment confirmation and completion confirmation. Its validation, rehearsal, batch delivery and audit controls must be approved before use.
+
+The website does not generate certificates or expose the workbook. Only records with confirmed payment and confirmed completion should enter the live certificate batch.
+
+## Delivery sequence
+
+1. Maintain one public GitHub Pages target and remove public links to the retired secure-app flow.
+2. Implement the How to register page and the browser-only readiness guide.
+3. Update all race fees to ₹200, ₹250 and ₹250.
+4. Add generic route timelines without internal station locations.
+5. Present T-shirt and medal inclusion, collection information, current POS payment method and contacts consistently.
+6. Verify navigation, touch targets, typography, overflow and content at 320, 390, 768 and 1366 pixels.
+7. Build the static site and confirm its output contains no registration, authentication, Supabase or payment-upload interface.
+8. Publish through GitHub Pages and optionally connect the same static build to Netlify.
+9. In a later private phase, rehearse the certificate process with synthetic rows before using the signed-off internal export after race day.
+
+## Information still required
+
+- Approved reporting and flag-off timings.
+- Any final participant instructions or safety announcements.
+- An authorised QR-payment mechanism, only if it later replaces or supplements the SI POS process.
+- Approved certificate artwork and signer details for the later private post-race workflow.
+
+These pending details can be added without changing the architecture.

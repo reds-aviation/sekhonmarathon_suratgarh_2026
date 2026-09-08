@@ -44,7 +44,7 @@ vm.runInNewContext(await readFile(new URL('public/service-worker.js', root), 'ut
 let pending = Promise.resolve();
 events.install({ waitUntil: (promise) => { pending = Promise.resolve(promise); } });
 await pending;
-const stored = [...buckets.get('desert-braves-public-v1').keys()];
+const stored = [...buckets.get('desert-braves-public-v2').keys()];
 assert.equal(stored.length, 4); checks++;
 assert(stored.every((url) => url === `${base}offline.html` || /\/assets\/(app-icon-(192|512)|apple-touch-icon-180)\.png$/.test(url))); checks++;
 assert(!stored.includes(base)); checks++;
@@ -60,7 +60,7 @@ async function request(url, fields = {}) {
 const fresh = await request(base, { mode: 'navigate' });
 assert.equal(await fresh.text(), 'FRESH NETWORK'); checks++;
 assert.equal(network.at(-1).options.cache, 'no-store'); checks++;
-assert.equal(buckets.get('desert-braves-public-v1').size, 4); checks++;
+assert.equal(buckets.get('desert-braves-public-v2').size, 4); checks++;
 
 for (const [url, fields] of /** @type {Array<[string, RequestInit]>} */ ([
   ['https://project.supabase.co/rest/v1/registrations', {}],
@@ -85,9 +85,9 @@ buckets.set('unrelated-project-cache', new Map());
 events.activate({ waitUntil: (promise) => { pending = Promise.resolve(promise); } });
 await pending;
 assert(!buckets.has('desert-braves-public-v0')); checks++;
-assert(buckets.has('desert-braves-public-v1')); checks++;
+assert(buckets.has('desert-braves-public-v2')); checks++;
 assert(buckets.has('unrelated-project-cache')); checks++;
-buckets.get('desert-braves-public-v1').delete(`${base}offline.html`);
+buckets.get('desert-braves-public-v2').delete(`${base}offline.html`);
 const unavailable = await request(base, { mode: 'navigate' });
 assert.equal(unavailable.status, 503); checks++;
 assert.equal(unavailable.headers.get('Cache-Control'), 'no-store'); checks++;
@@ -98,7 +98,7 @@ for (const field of ['id', 'scope', 'start_url']) {
 }
 assert.equal(manifest.display, 'standalone'); checks++;
 assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ['192x192', '512x512']); checks++;
-assert.deepEqual(manifest.shortcuts.map((shortcut) => shortcut.url), ['./#races', './#guide']); checks++;
+assert.deepEqual(manifest.shortcuts.map((shortcut) => shortcut.url), ['./#races', './#register']); checks++;
 assert.equal(checks, 29, 'Keep all cache/privacy/manifest regression assertions');
 });
 

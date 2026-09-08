@@ -1,6 +1,6 @@
 # Event content and artwork
 
-Event date, timing, category fees, benefits and policy baseline were supplied by the organiser for reuse from [the central event website](https://www.sekhonmarathon.com/). Suratgarh, Desert Braves and the restricted audience are organiser-provided changes. Route maps and real QR payment details remain unconfigured. The organiser supplied contact numbers 8838463776 and 7027964880.
+The event baseline was supplied by the organiser for reuse from [the central event website](https://www.sekhonmarathon.com/). Suratgarh, Desert Braves, the restricted audience and the current local fees are organiser-provided changes. The current fees are ₹200 for 5 KM and ₹250 for both 10 KM and 21 KM. Payment is through the SI POS machine at Sports Section; no QR-payment artwork is active. The public route view is a generic progression timeline rather than an operational station map. The organiser supplied contact numbers 8838463776 and 7027964880.
 
 The shared Sekhon event logo is from [the reference site](https://www.sekhonmarathon.com/). The Gwalior wing crest, Gwalior-labelled artwork and payment QR are not used.
 

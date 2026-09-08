@@ -1,8 +1,8 @@
-# Event-day platform: authority, operations and activation
+# Archived: event-day platform authority and operations
 
-The public GitHub Pages guide is not an administration system. Registration, payment evidence, organiser tools and race-day records belong only to the authenticated Netlify app backed by Supabase. The live Supabase project, Netlify origin, payment details, organiser accounts and certificate approval have not yet been configured.
+> **Archived design — superseded 8 September 2026.** The authenticated Netlify/Supabase event-day platform described below was never deployed and is no longer the event workflow. The public GitHub Pages site provides information and AFNET registration guidance only. Official records stay in the existing internal system and its Excel export. Do not use the activation checklist below for the current event.
 
-Confirmed event fees are ₹399 for 5 KM and ₹499 for both 10 KM and 21 KM. Registration and payment configuration remain closed until the owner completes the activation checks.
+The remainder is retained as an engineering record. Its fees and operating assumptions are historical. Current public fees are ₹200 for 5 KM and ₹250 for both 10 KM and 21 KM. Payment is currently through the SI POS machine at Sports Section. All registered participants will receive an event T-shirt and medal. A future private certificate workflow will be planned separately and is not included in the current public release.
 
 ## Authority model
 

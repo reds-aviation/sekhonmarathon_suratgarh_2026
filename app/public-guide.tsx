@@ -6,15 +6,16 @@ import {
   CupSoda,
   Flag,
   Home as HomeIcon,
+  ListChecks,
   Medal,
   ShieldCheck,
   Shirt,
   Award,
-  UserRound,
 } from 'lucide-react';
 import { EventGallery } from '@/components/event-gallery';
 import { EventGuide } from '@/components/event-guide';
 import { EventTribute } from '@/components/event-tribute';
+import { RegistrationGuide } from '@/components/registration-guide';
 import { RACES } from '@/lib/race-data';
 import {
   hashForPage,
@@ -27,16 +28,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/u, '');
 const titles: Record<SitePage, string> = {
   home: 'Sekhon IAF Marathon 2026',
   races: 'Choose your race',
+  register: 'How to register',
   guide: 'Event guide',
   tribute: 'Why we run',
   gallery: 'Campaign & memories',
 };
-
-function secureAppHref(hash = '') {
-  const url = new URL(import.meta.env.VITE_PUBLIC_APP_URL);
-  url.hash = hash;
-  return url.href;
-}
 
 export function PublicGuide() {
   const initial = parseSiteLocation(window.location.hash, window.location.search);
@@ -140,7 +136,7 @@ export function PublicGuide() {
           </span>
         </a>
         <nav className="app-desktop-nav" aria-label="Main navigation">
-          {(['home', 'races', 'guide', 'tribute'] as SitePage[]).map((view) => (
+          {(['home', 'races', 'register', 'guide', 'tribute'] as SitePage[]).map((view) => (
             <a
               key={view}
               href={hashForPage(view)}
@@ -151,14 +147,13 @@ export function PublicGuide() {
                 ? 'Home'
                 : view === 'races'
                   ? 'Races'
+                  : view === 'register'
+                    ? 'How to register'
                   : view === 'guide'
                     ? 'Event guide'
                     : 'Why we run'}
             </a>
           ))}
-          <a href={secureAppHref('#participant')}>
-            <UserRound size={17} /> My entry
-          </a>
         </nav>
         <a
           className="app-mobile-tribute"
@@ -199,6 +194,11 @@ export function PublicGuide() {
               <p className="app-tagline">The Land of Sun and Sand</p>
             </div>
           </section>
+          <section className="app-home-facts" aria-label="Event at a glance">
+            <div><small>Race day</small><strong>4 October 2026</strong></div>
+            <div><small>Three distances</small><strong>5 KM · 10 KM · 21 KM</strong></div>
+            <div><small>Registration</small><strong>Official AFNET portal</strong></div>
+          </section>
           <div className="app-home-grid">
             <section aria-labelledby="home-races-title">
               <div className="app-section-title">
@@ -221,10 +221,15 @@ export function PublicGuide() {
                 ))}
               </div>
               <p className="app-small-note">
-                Entries close 27 September. Payment details will be published before registration opens.
+                Register on AFNET by 27 September. Pay at Sports Section through the SI POS machine.
               </p>
             </section>
             <section className="app-home-links" aria-label="Before your run">
+              <a className="app-guide-shortcut app-register-shortcut" href="#register" onClick={(event) => follow(event, 'register')}>
+                <ListChecks size={23} />
+                <span><b>How to register</b><small>AFNET steps · payment guidance</small></span>
+                <ChevronRight size={18} />
+              </a>
               <a className="app-guide-shortcut" href="#guide" onClick={(event) => follow(event, 'guide')}>
                 <BookOpen size={23} />
                 <span><b>Your event guide</b><small>T-shirt collection · 3 October</small></span>
@@ -260,7 +265,7 @@ export function PublicGuide() {
             <p className="app-kicker">Your start line</p>
             <h1 tabIndex={-1}>Choose your distance.</h1>
             <p>Tap a race for details.</p>
-            <p className="app-status" aria-live="polite"><span />Registration is currently closed</p>
+            <p className="app-status" aria-live="polite"><span />Official registration is completed on AFNET</p>
           </header>
           <div className="app-race-choices">
             {RACES.map((race) => (
@@ -278,44 +283,58 @@ export function PublicGuide() {
                 </summary>
                 <div className="app-race-detail">
                   <p>{race.description}</p>
-                  <a className="app-primary" href={secureAppHref('#races')}>
-                    Register in secure app <ArrowRight size={18} />
+                  <a className="app-primary" href="#register" onClick={(event) => follow(event, 'register')}>
+                    How to register <ArrowRight size={18} />
                   </a>
                 </div>
               </details>
             ))}
           </div>
-          <p className="app-small-note">Confirmed fees are shown. No payment is accepted in this public guide.</p>
+          <p className="app-small-note">Fees are ₹200 for 5 KM and ₹250 for 10 KM or 21 KM. Payment is made at Sports Section.</p>
           <section className="app-race-kit">
-            <h2>Planned for every runner</h2>
+            <h2>For every registered participant</h2>
             <div>
               <span><Shirt size={20} /> Event T-shirt</span>
               <span><Medal size={20} /> Medal</span>
               <span><Award size={20} /> Digital certificate</span>
               <span><CupSoda size={20} /> Refreshments</span>
             </div>
+            <p className="app-small-note">Every registered participant will receive the event T-shirt and medal.</p>
             <a href="#guide" onClick={(event) => follow(event, 'guide')}>
-              Collection &amp; contact details <ArrowRight size={15} />
+              Route, collection &amp; race-day details <ArrowRight size={15} />
             </a>
           </section>
           <aside className="app-race-help">
             <ShieldCheck size={19} />
-            <p>Airwarriors and families only. Sign in with your email and station invitation code when registration opens.</p>
+            <p>Airwarriors and families only. Complete the official form from an AFNET-connected system by 27 September 2026.</p>
           </aside>
         </main>
       )}
-      {page === 'guide' && <EventGuide onChooseRace={() => navigate('races')} />}
+      {page === 'register' && (
+        <RegistrationGuide
+          onChooseRace={() => navigate('races')}
+          onOpenEventGuide={() => navigate('guide')}
+        />
+      )}
+      {page === 'guide' && (
+        <EventGuide
+          onChooseRace={() => navigate('races')}
+          onHowToRegister={() => navigate('register')}
+        />
+      )}
       {page === 'tribute' && <EventTribute onChooseRace={() => navigate('races')} onOpenGallery={() => navigate('gallery')} />}
       {page === 'gallery' && <EventGallery onChooseRace={() => navigate('races')} />}
 
       <footer className="app-footer">
-        <span>© 2026 Desert Braves · Suratgarh</span>
+        <div className="app-footer-credit">
+          <span>© 2026 Desert Braves · Air Force Station Suratgarh</span>
+          <strong>Developed by Flt Lt Balaram Reddy, OIC Sports and Adv</strong>
+        </div>
         <details className="app-more">
           <summary>More information</summary>
           <div>
-            <a href={secureAppHref('#participant')}>My entry</a>
-            <a href={secureAppHref('#verify')}>Verify a certificate</a>
-            <a href={secureAppHref('#organiser')}>Organiser access</a>
+            <button onClick={() => navigate('register')}>How to register</button>
+            <button onClick={() => navigate('guide')}>Event guide</button>
             <button onClick={() => navigate('gallery')}>Campaign &amp; memories</button>
           </div>
         </details>
@@ -327,10 +346,12 @@ export function PublicGuide() {
         <a href="#races" aria-current={page === 'races' ? 'page' : undefined} onClick={(event) => follow(event, 'races')}>
           <Flag size={21} /><span>Races</span>
         </a>
+        <a href="#register" aria-current={page === 'register' ? 'page' : undefined} onClick={(event) => follow(event, 'register')}>
+          <ListChecks size={21} /><span>How to register</span>
+        </a>
         <a href="#guide" aria-current={page === 'guide' ? 'page' : undefined} onClick={(event) => follow(event, 'guide')}>
           <BookOpen size={21} /><span>Event guide</span>
         </a>
-        <a href={secureAppHref('#participant')}><UserRound size={21} /><span>My entry</span></a>
       </nav>
     </div>
   );

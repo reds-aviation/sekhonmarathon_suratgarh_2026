@@ -1,62 +1,74 @@
 # Sekhon Indian Air Force Marathon 2026 · Desert Braves
 
-**Air Force Station Suratgarh — The Land of Sun and Sand.**
+**Air Force Station Suratgarh — The Land of Sun and Sand**
 
 Public event guide: <https://reds-aviation.github.io/sekhonmarathon_suratgarh_2026/>
-Repository: <https://github.com/reds-aviation/sekhonmarathon_suratgarh_2026>
 
-This project has two deliberately separate website targets:
+This repository publishes a mobile-first event and registration-guidance website on GitHub Pages and Netlify. It does not register participants, accept payments, upload payment proof or store personal information.
 
-- **GitHub Pages** is the public guide. It carries the event story, race information, gallery, contact information and a link to the secure app. It contains no participant records, Supabase credentials or registration interface.
-- **Netlify** will host the authenticated event app. It is the only place for sign-in, station-code registration, payment screenshot upload, a participant’s own race desk and organiser operations.
+The organisation's existing AFNET system remains the single registration and payment-confirmation channel. Its internal Excel export remains the source for participant administration and post-race certificate distribution.
 
-The public guide is currently live. The secure app is not yet activated because the final Netlify URL, Supabase project, real UPI details and organiser accounts have not been supplied. The payment QR shown in the preview is intentionally marked **YET TO UPDATE** and cannot receive a payment.
+## Confirmed event information
 
-## Event facts
-
-| Item | Confirmed detail |
+| Item | Detail |
 | --- | --- |
 | Race day | Sunday, 4 October 2026 |
-| Registration deadline | Sunday, 27 September 2026, 23:59 IST |
-| Audience | Airwarriors and their families, using a verified email sign-in and station invitation code |
-| 5 KM fee | ₹399 |
-| 10 KM fee | ₹499 |
-| 21 KM fee | ₹499 |
+| Registration deadline | Sunday, 27 September 2026 |
+| Eligible participants | Airwarriors and their families |
+| 5 KM fee | ₹200 |
+| 10 KM fee | ₹250 |
+| 21 KM fee | ₹250 |
+| Payment | SI POS machine at Sports Section |
 | T-shirt collection | Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station |
+| Participant benefits | All registered participants will receive an event T-shirt and medal |
 | Contact | 8838463776 · 7027964880 |
-| Route | Released only to invited participants after station approval |
 
-Race timing, route geometry, registration opening and payment acceptance all remain closed until their operational inputs are approved. A participant can never use the preview QR as proof of payment.
+Reporting and flag-off timings will be published only after approval. A QR-payment option may be added later if an authorised QR becomes available; the current website does not display or accept a QR payment.
 
-## How private data is protected
+## Participant journey
 
-The authenticated app uses Supabase Auth, a private PostgreSQL data store and private Supabase Storage.
+The main website action is **How to register**. It explains the internal process without presenting AFNET as a public internet link:
 
-- A participant can view only their own registration and payment status.
-- Payment screenshots stay in the private `payment-receipts` bucket. They have no public URL.
-- A reviewer must use a verified email and multi-factor authentication at **AAL2**. Their access is granted explicitly for an event capability such as `payment_reviewer`, `tshirt_desk`, `completion_desk`, `route_publisher` or `event_admin`.
-- Capability grants, payment-review decisions and private-proof access are audited with an actor, request ID, server time and revision.
-- Payment evidence is kept as an immutable attempt ledger. Every review is revision-checked and idempotent, so a retry cannot create a second decision.
-- A receipt viewer must obtain a short-lived server-signed link after database authorisation. Storage paths and service-role keys never enter the browser bundle.
-- A rejected payment is corrected only by its verified, invited owner. The original proof and review remain on record; a fresh UTR and private screenshot create a new `pending_review` attempt. A correction cannot overwrite an earlier proof or reuse a UTR.
-- Physical T-shirt handover is recorded in a separate, audited issue ledger. The desk can issue only to a registration whose payment summary **and** a verified payment attempt agree. An administrator can void an issue only with its current revision and a recorded reason.
+1. Use an AFNET-connected system and open AFND at `www.afnd.iaf.in`.
+2. Open **Sekhon Marathon Registration** from the pop-up window.
+3. Scroll down and select **HQ WAC**.
+4. Open the official registration page.
+5. Enter the required participant details.
+6. Pay the correct race fee at Sports Section through the SI POS machine.
+7. Enter the required payment-confirmation details in the official internal portal.
 
-The confirmed payment workflow is: select a race → sign in and use the station invitation code → enter the real UPI reference and upload a screenshot → receive `pending_review` status → an authorised organiser checks it against the bank/UPI record → receive `verified` or `rejected` status. If rejected, the participant supplies a new reference and replacement screenshot from their own entry; the system creates a new immutable attempt for review while retaining the rejected attempt. A screenshot is evidence only; it does not approve a payment automatically.
+The page includes a simple Yes/No readiness guide. Its answers stay only in the open browser screen and are not saved or transmitted:
 
-## Google Drive and Google Sheets
+- If the participant has not registered internally, it shows the AFNET steps.
+- If the participant has not paid, it directs them to the Sports Section SI POS machine.
+- If both steps are complete, it reminds them to retain their official portal confirmation.
 
-The organiser’s Google Sheet is a **one-way operational mirror** of the secure app. It is useful for private totals, payment follow-up, T-shirt-size planning and distribution reporting, but it is never the payment decision system.
+## Website structure
 
-- The app database remains the source of truth for registrations, evidence and payment status.
-- A server-authorised sync exports changed payment-attempt revisions and upserts the private organiser Sheet by Registration ID. The current receipt copy is authorised by its payment-attempt ID, so a correction never mutates an earlier private proof.
-- Changes made in Sheets must not approve, reject or otherwise change a participant’s record in Supabase.
-- Keep the Sheet and receipt folder private to authorised organisers. Do not enable link sharing or place participant data in the public GitHub repository.
+- **Home:** event identity, date, audience, race choices and the main How to register action.
+- **Races:** 5 KM, 10 KM and 21 KM descriptions with the confirmed fees.
+- **How to register:** AFNET procedure, local readiness guide and current payment method.
+- **Event guide:** important dates, T-shirt collection, inclusions, announcements, contacts and short practical answers.
+- **Route overview:** a simplified public timeline for each distance. It communicates course progression without publishing internal station locations or presenting an operational map.
+- **Why we run and gallery:** the legacy of Fg Offr Nirmal Jit Singh Sekhon, PVC, and organiser-supplied event imagery.
 
-The deployed mirror accepts only HMAC-signed, timestamped, single-use requests from the private Apps Script. It rejects browser origins and replayed requests. Screenshots are copied through a 60-second server-signed URL into the private Drive folder; their Storage paths never reach the Sheet or a browser. A correction uses a different payment-attempt ID, so its receipt copy stays separate from the prior proof. Configure the Supabase `DRIVE_MIRROR_HMAC_SECRET` and the matching Apps Script property separately, with at least 32 characters.
+## Participant data and certificates
+
+The public website has no participant database. Organisers should treat the final internal Excel export as the single source of truth for:
+
+- official registration identity;
+- participant name and email;
+- selected race category;
+- payment confirmation; and
+- race completion confirmation.
+
+Certificate email processing is intentionally deferred from this public-site release. After race day, organisers may configure a separate private workflow from the signed-off internal Excel export. It must use only records with both payment and race-completion confirmation. Its implementation, sender configuration, rehearsal and delivery controls will be reviewed separately and are not part of this repository's published website.
+
+Keep the participant workbook, certificate template, generated PDFs and audit sheet private to authorised organisers. They must never be copied into this repository or exposed through GitHub Pages.
 
 ## Local development
 
-Use Node 24 and pnpm 11.
+Use Node 22 or newer and pnpm.
 
 ```text
 pnpm install
@@ -64,34 +76,28 @@ pnpm dev
 pnpm typecheck
 pnpm test
 pnpm run build:pages
-pnpm run build:app
+pnpm run build:netlify
+pnpm run test:targets
 ```
 
-`pnpm dev` starts the authenticated-app target. `pnpm run dev:pages` starts the public-guide target. `pnpm run verify:targets` builds both targets and confirms that the Pages output does not contain private registration or Supabase code.
+`pnpm dev` opens the same public-guide target that is deployed. The production output is written to `dist/pages`.
 
-Copy `.env.example` to `.env.local` for local work. `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are browser-safe only for the Netlify app target. Never put a service-role key, SMTP credential, Drive secret or deployment token in a `VITE_` variable or source file. `SITE_ORIGIN` belongs in the Supabase Edge Function secret store, not the browser build; it must be the one final HTTPS Netlify origin with no path, query or fragment.
+## Publishing
 
-## Activation sequence
+Push the approved change to `main`. The GitHub Pages workflow runs type checking, focused linting, automated tests and the static build before publishing `dist/pages`.
 
-1. Create a new Supabase project and apply migrations `001` through `015` in order to a staging project first, then production. Migrations `012`, `013` and `014` add the T-shirt issue ledger, immutable rejected-payment correction, and capability-gated race-day completion workflow. Migration `015` adds the private member route timeline. Collection, completion and route publication remain closed until explicitly enabled.
-2. Create the final Netlify site, then configure verified email sign-in, disable anonymous sign-in and configure production mail delivery. Set the Supabase Site URL and allowed redirect URLs to the final HTTPS **Netlify app** address, not the GitHub Pages guide.
-3. Set `VITE_APP_URL`, `VITE_AUTH_REDIRECT_URL`, `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the protected Netlify/GitHub production environment. The Pages build must receive the final Netlify URL only for its secure-app handoff.
-4. Before deploying browser-facing functions, set Supabase Edge Function `SITE_ORIGIN` to exactly that single HTTPS Netlify origin, for example `https://marathon.example.net`. It must have no path, query, fragment, credentials or wildcard. Do not use the Pages URL or a localhost URL. Set `DRIVE_MIRROR_HMAC_SECRET` separately in Supabase and the private Apps Script.
-5. Deploy the function set after migrations: `submit-registration`, `correct-payment`, `organiser-payment-proof`, `drive-register` and `certificate`. Rehearse the functions with staging identities before configuring the private Drive mirror. The function runtime service-role key stays only in Supabase; it is never a browser or Netlify `VITE_` value.
-6. Create the station invitation-code process and grant organiser capabilities only to confirmed organiser accounts. Enrol organisers in MFA before enabling any organiser capability. There is no self-enrolment path for organisers. Use the owner-only issuer to generate a fresh station code at activation; do not reuse a code shared in chat or place one in source control.
-7. Create the private Sheet and receipt folder, set the Apps Script properties, and test a one-way synthetic sync. Test participant isolation, short-lived proof access, duplicate UTR rejection, rejected-payment correction, review audit records, T-shirt issue/void audit records and Sheets updates.
-8. Supply the final payee name, UPI ID and QR image. Update `event_config` only after the QR has been independently checked. Then set `payment_configured=true` and `registration_open=true` together through the approved owner procedure.
-9. Have an AAL2 `route_publisher` rehearse saving, publishing, updating and withdrawing a synthetic route. Confirm that an invited member can view it and a non-member cannot. Enter the approved operational timeline only in the private route workspace.
-10. Rehearse a full phone and laptop flow with non-production accounts: email sign-in, invitation code, registration, screenshot upload, correction after rejection, organiser review, T-shirt collection and void recovery, completion-desk enablement, results review and certificate access. Only then invite participants.
+To publish the same website on Netlify, connect this GitHub repository in Netlify and keep the detected settings from [netlify.toml](netlify.toml): build command `pnpm run build:netlify` and publish directory `dist/netlify`. Netlify supplies its own site URL during the build, so canonical links and asset paths work at the Netlify root. No database or environment secrets are required.
 
-## Race-day and collection operation
+Before a public release, verify the built site at phone and laptop widths. Confirm that:
 
-The app is designed for organiser-managed clocks and finish records; it does not claim chip timing. The final route is held in the private app and released as an approved timeline only to invited participants after route details, control points and reporting guidance are confirmed. An AAL2 `route_publisher` can publish, revise or withdraw it with an audit trail. Race-day completion is disabled by default. It requires both approved timing and completion-desk settings, an AAL2 `completion_desk` capability, a verified payment, an idempotent request and the current result revision. An AAL2 `event_admin` separately reviews or locks a recorded result before certificate release.
+- the How to register steps are easy to follow;
+- the AFNET address is displayed as text and cannot be opened as a public link;
+- the correct fees are ₹200, ₹250 and ₹250;
+- no registration form, sign-in, payment upload or participant record is present;
+- the simplified route timeline contains no sensitive internal locations;
+- the T-shirt collection information and contact numbers are easy to find; and
+- the footer credit reads **Developed by Flt Lt Balaram Reddy, OIC Sports and Adv**.
 
-For collection, organisers will work from the private, verified-payment list and record the requested/issued T-shirt size at the designated desk on 3 October. This must remain an authenticated organiser action, with an audit trail and a clear exception note for any size change.
+## Archived backend work
 
-See [event-day operations](docs/event-day-platform.md) for authority boundaries and activation checks, and [the station platform plan](docs/2026-09-station-platform-plan.md) for the delivery sequence.
-
-## Validation limits
-
-The repository’s automated checks cover target separation, registration data rules, access controls and payment-review behaviour using synthetic records. They do not prove a live Supabase, Netlify, email, UPI, Google Drive, Android, iPhone or physical finish-line workflow. Those systems require staging rehearsal and final operator approval before launch.
+The repository retains earlier Supabase and receipt-upload designs for engineering reference only. They are superseded and are not part of the current website, deployment or registration process. Netlify is now supported only as an additional static host. See [the archived backend architecture](docs/backend-architecture.md) and [the archived event-day platform plan](docs/event-day-platform.md) for the historical design.

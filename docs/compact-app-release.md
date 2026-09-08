@@ -1,52 +1,53 @@
 # Compact mobile guide: scope and verification
 
-6 September 2026 · Air Force Station Suratgarh · Desert Braves
+8 September 2026 · Air Force Station Suratgarh · Desert Braves
 
-## Public-guide experience
+## Public experience
 
-The phone experience keeps the first screen useful: host-station identity, date, race choices and clear routes to the Event guide and the secure app. Longer tribute, gallery and practical information are kept on separate views so the home screen does not become a long scroll.
+The phone experience keeps the first screen useful: host-station identity, event date, eligible audience, race choices and a clear **How to register** action. The heritage story, gallery and detailed guidance sit on focused views so the home page does not become a long book-like scroll.
 
-The public guide uses the Suratgarh visual system: deep navy for authority, ivory reading surfaces, restrained canal-green actions and warm desert-gold accents. Public Sans is used for reading and Barlow Condensed for event display copy. The artwork is an impression of a thriving desert station and surrounding region; it is not a route map.
+The public guide uses the Suratgarh visual system: deep navy for authority, ivory reading surfaces, restrained green for actions and warm desert-gold accents. Public Sans supports body text and Barlow Condensed supports event display copy. The artwork is an impression of a thriving desert station and its surrounding region; it is not a route map or a promise of a flypast.
 
 The compact guide includes:
 
-1. Home, Races, Event guide and My entry shortcuts with direct links and keyboard focus handling.
-2. Expandable 5 KM, 10 KM and 21 KM choices, displaying the confirmed fees: ₹399, ₹499 and ₹499.
-3. The two organiser contact numbers directly in the Event guide: 8838463776 and 7027964880.
-4. T-shirt collection details: Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station.
-5. A 2025 memories gallery using supplied Suratgarh photographs. The warm-up video is intentionally excluded.
-6. Clear language and consistent typography, including the corrected `Supreme` and `Sacrifice` copy in the Sekhon tribute.
+1. Direct Home, Races, How to register and Event guide navigation with visible keyboard focus.
+2. Compact 5 KM, 10 KM and 21 KM choices at ₹200, ₹250 and ₹250.
+3. A seven-step AFNET registration guide with the internal AFND address displayed as non-clickable text.
+4. A browser-only Yes/No readiness guide that neither saves nor sends participant answers.
+5. The current payment instruction: use the SI POS machine at Sports Section.
+6. A simplified public route timeline for each distance, without internal station locations.
+7. Both contact numbers: 8838463776 and 7027964880.
+8. T-shirt collection on Saturday, 3 October 2026, 09:00–13:30, in front of SBI Bank inside the station.
+9. A clear statement that all registered participants will receive an event T-shirt and medal.
+10. A 2025 memories gallery using organiser-supplied Suratgarh photographs. The warm-up video remains excluded.
 
-Routes, reporting guidance and payment details stay concise until approved. The approved route timeline is now held in the private app: an AAL2 route publisher can release, revise or withdraw it, and only invited participants can view it.
+## Public and internal boundaries
 
-## Public and secure boundaries
+GitHub Pages is the primary public website and Netlify may host the identical static build. Neither host serves registration, participant records, payment uploads, transaction-number collection, certificate delivery or organiser operations.
 
-GitHub Pages is only the public guide. It must not serve registration, authenticated participant records, payment uploads or organiser operations. The Pages build is compiled without the private app modules or Supabase browser configuration.
+Official registration and payment confirmation take place through the organisation's existing AFNET system. The internal Excel export is the source for participant administration. Post-race certificate delivery is intentionally deferred to a later private organiser phase; no certificate-mailing tool is included in this public release.
 
-The Netlify app will contain sign-in, station-code registration, the participant’s own entry and authorised organiser tools. The preview call to action remains closed until the final Netlify/Supabase configuration and payment details are ready. Its sample QR is visibly marked **YET TO UPDATE** and cannot be used for payment.
-
-The secure release includes four additional guards: migration `012` records a physical T-shirt issue only after verified payment; migration `013` lets an invited participant correct a rejected payment only by creating a new immutable proof and pending-review attempt; migration `014` keeps finish-line completion disabled until an AAL2 completion desk and approved timing settings are deliberately enabled; migration `015` keeps operational route content out of the public guide and limits it to invited members after a route publisher releases it. The Google Sheet remains a one-way private mirror and is never a way to change these records.
-
-Before any secure-app deployment, apply migrations `001`–`015` in staging, create the final HTTPS Netlify origin, and set Supabase Edge Function `SITE_ORIGIN` to exactly that origin with no path, query, fragment, credentials or wildcard. Then deploy `submit-registration`, `correct-payment`, `organiser-payment-proof`, `drive-register` and `certificate`, test their origin and sign-in denials, and only then rehearse the app. The Pages guide cannot be used as `SITE_ORIGIN`.
+The earlier Netlify/Supabase app and Google Drive receipt-mirror proposal is superseded. Its source and documents may remain in the repository as archived engineering material, but no part of that flow is included in the public release.
 
 ## Responsive checks to retain
 
-Before any release, check the built public guide and secure app at 320 × 740, 390 × 844 and 1366 × 768 or wider:
+Before each release, check the built guide at 320 × 740, 390 × 844, 768 × 1024 and 1366 × 768 or wider:
 
 | Check | Expected result |
 | --- | --- |
-| Navigation | No horizontal overflow; direct links land on a useful heading; touch targets remain at least 44 px. |
-| Race choice | The selected distance and confirmed fee stay visible and readable. |
-| Guide content | Phone numbers and T-shirt collection details are easy to find. |
-| Artwork and gallery | Images crop without obscuring essential copy; supplied photos remain credited where required. |
-| Secure-app handoff | Public actions point to the configured HTTPS Netlify app and never expose a localhost address. |
-| Payment preview | Payment acceptance and screenshot upload remain unavailable until real payment details and backend configuration are active. |
-| Correction and collection | A rejected entry shows a correction path without making another payment; organiser collection is available only after verified payment. |
-| Race-day guard | Completion tools remain unavailable until the approved timing and completion-desk settings are enabled for rehearsed organisers. |
-| Accessibility | Keyboard navigation, focus return, image alternatives and colour contrast remain intact. |
+| Navigation | No horizontal overflow; actions land on a useful heading; touch targets are at least 44 pixels. |
+| Home hierarchy | Host identity, date and How to register action are understandable without a long initial scroll. |
+| Race choice | Distance and current fee remain visible and readable. |
+| Registration guide | AFNET steps retain their order; the internal address is text rather than a public hyperlink. |
+| Readiness guide | Yes/No choices reveal accurate next steps and do not persist after reload. |
+| Route timeline | The sequence is readable on phone and contains no internal station locations. |
+| Event guide | Contacts, POS payment, participant benefits and T-shirt collection are easy to find. |
+| Artwork and gallery | Images crop without hiding essential HTML copy; archive captions remain accurate. |
+| Accessibility | Keyboard navigation, focus order, alternative text, text sizing and colour contrast remain intact. |
+| Privacy | No sign-in, public registration form, participant lookup, screenshot upload or third-party data request is present. |
 
-Use `pnpm typecheck`, `pnpm test` and `pnpm run verify:targets` before a release. Physical iPhone Safari and Android browser checks remain required before opening registration.
+Run `pnpm typecheck`, `pnpm test`, `pnpm run build:pages`, `pnpm run build:netlify` and `pnpm run test:targets` before publishing. Verify each final deployed URL on a physical Android phone and iPhone before circulation.
 
-## Launch state
+## Release state
 
-No participant data, payment screenshot, payment decision or Google Drive sharing is created by the public-guide build. The secure backend remains blocked until the final Netlify origin, Supabase project, exact `SITE_ORIGIN`, verified organiser accounts, real UPI configuration and staging rehearsal are ready.
+The static public guide can be published without a registration backend. Reporting and flag-off timings remain marked as pending until approved. An authorised QR may be added later; until then, only the SI POS payment instruction should appear.

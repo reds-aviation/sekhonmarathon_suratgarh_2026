@@ -1,4 +1,10 @@
-export type SitePage = 'home' | 'races' | 'guide' | 'tribute' | 'gallery';
+export type SitePage =
+  | 'home'
+  | 'races'
+  | 'register'
+  | 'guide'
+  | 'tribute'
+  | 'gallery';
 export type PortalView = 'participant' | 'organiser' | 'verify';
 
 export type SiteLocation =
@@ -8,6 +14,7 @@ export type SiteLocation =
 const pageHashes: Record<SitePage, string> = {
   home: '#home',
   races: '#races',
+  register: '#register',
   guide: '#guide',
   tribute: '#tribute',
   gallery: '#gallery',
@@ -25,6 +32,7 @@ const legacyPages: Record<string, SitePage> = {
   running: 'tribute',
   event: 'tribute',
   'race-day': 'guide',
+  'how-to-register': 'register',
   faqs: 'guide',
   contact: 'guide',
   'guide-kit': 'guide',

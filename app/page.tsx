@@ -77,6 +77,7 @@ const OrganiserRouteTimelineDesk = isPublicGuide
 const titles: Record<SitePage, string> = {
   home: 'Sekhon IAF Marathon 2026',
   races: 'Choose your race',
+  register: 'How to register',
   guide: 'Event guide',
   tribute: 'Why we run',
   gallery: 'Campaign & memories',
@@ -662,6 +663,7 @@ export default function Home() {
           <EventGuide
             key={anchor || 'guide'}
             onChooseRace={() => navigate('races')}
+            onHowToRegister={() => navigate('register')}
           />
         )}
         {page === 'tribute' && (

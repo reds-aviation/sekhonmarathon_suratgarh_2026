@@ -1,12 +1,9 @@
 [build]
-  command = "pnpm run build:app"
-  publish = "dist/app"
+  command = "pnpm run build:netlify"
+  publish = "dist/netlify"
 
 [build.environment]
   NODE_VERSION = "22.13.0"
 
-# The trusted GitHub release builds this static app with browser-safe VITE_APP_URL,
-# VITE_AUTH_REDIRECT_URL, VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY
-# from its protected production environment, then uploads the finished artifact.
-# If Netlify is ever used to build directly, set the same browser-safe values in
-# its encrypted site environment. The site URL must be final HTTPS before release.
+# Netlify supplies URL during its build. The Vite configuration uses it for
+# canonical and social metadata while this target keeps every asset path at /.

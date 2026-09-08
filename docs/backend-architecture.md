@@ -1,6 +1,8 @@
-# Proposed Suratgarh marathon backend
+# Archived: proposed Suratgarh marathon backend
 
-This is the original reviewable design for the foundation of a **new Supabase project**. It has not been deployed. The current release extends it through migrations `006`–`015`; use the activation sequence in the repository README for the complete production order.
+> **Archived design — superseded 8 September 2026.** This Supabase/Netlify registration and payment-upload proposal was never deployed and is not part of the current product. Official registration and payment confirmation now remain on the organisation's existing AFNET system; the public GitHub Pages website collects no participant data. Do not follow the activation steps below for the current event.
+
+The content below is retained only as an engineering record of the earlier proposal. Its seeded fees, deployment sequence and operational assumptions are historical. Current public fees are ₹200 for 5 KM and ₹250 for both 10 KM and 21 KM. The active architecture is documented in the [repository README](../README.md).
 
 ## Files and validation
 

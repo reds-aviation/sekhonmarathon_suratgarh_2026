@@ -25,9 +25,9 @@
       ]
     },
     {
-      "name": "Open event guide",
-      "short_name": "Event guide",
-      "url": "./#guide",
+      "name": "How to register",
+      "short_name": "AFNET guide",
+      "url": "./#register",
       "icons": [
         {
           "src": "assets/app-icon-192.png",

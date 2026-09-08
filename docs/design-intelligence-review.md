@@ -1,58 +1,62 @@
 # Website design intelligence review
 
-Reviewed 6 September 2026 for the Desert Braves’ Sekhon IAF Marathon website at Air Force Station Suratgarh.
+Revised 8 September 2026 for the Desert Braves' Sekhon Indian Air Force Marathon website at Air Force Station Suratgarh.
 
 ## Product brief
 
-The site serves airwarriors and families who usually arrive from a station message on a phone. Its first job is to identify the official event, show the current registration state, help a visitor choose 5 KM, 10 KM or 21 KM, and let a returning participant check an entry. The experience must remain concise, work at narrow widths, and avoid presenting preview functions as live services.
+Most visitors will arrive from a station message and open the website on a phone. Their main questions are: Is this the correct event? Which race suits me? What does it cost? How do I register on AFNET? How do I pay? What happens before and on race day?
 
-The chosen design direction is **station-first operational clarity**: a restrained navy, ivory, canal-green and warm-sand system; one strong station image; short task-based pages; visible status; and progressive disclosure for race, tribute, gallery and organiser detail.
+The chosen design direction is **station-first operational clarity**: a restrained navy, ivory, green and warm-sand system; one strong station illustration; short task-based views; a visible How to register action; and progressive disclosure for race, heritage, gallery and practical detail.
+
+The website is public information only. It does not need sign-in, a participant race desk, a public registration form, payment-proof upload or an organiser portal.
+
+## Audited visitor flow
+
+1. **Recognise the event:** Desert Braves, Air Force Station Suratgarh, date and eligible audience appear immediately.
+2. **Choose a distance:** compact 5 KM, 10 KM and 21 KM cards show ₹200, ₹250 and ₹250.
+3. **Open How to register:** a seven-step timeline explains the AFNET process and displays `www.afnd.iaf.in` as non-clickable internal-network text.
+4. **Check readiness:** two optional Yes/No prompts direct an unregistered participant back to the internal form or an unpaid participant to the Sports Section SI POS machine. Answers remain only in the browser screen.
+5. **Prepare for the event:** the Event guide provides collection details, inclusions, contacts, announcements and pending timings.
+6. **Understand the course shape:** generic timelines explain outward course, distance turnaround, return and finish without exposing internal station locations.
+7. **Return to AFNET when required:** the public site never implies that registration or payment confirmation is complete because a visitor viewed the guide.
+
+## Page hierarchy
+
+| View | Primary task | Content limit |
+| --- | --- | --- |
+| Home | Recognise event and start registration guidance | Identity, date, audience, race summary and one main action. |
+| Races | Compare distances and fees | One short card per category plus shared benefits. |
+| How to register | Complete the internal process correctly | Seven steps, current payment method and local readiness guide. |
+| Event guide | Prepare for collection and race day | Dates, inclusions, announcements, practical answers and contacts. |
+| Why we run | Understand the tribute | Concise verified Sekhon story and one strong quotation from the official citation. |
+| Gallery | See event atmosphere | Selected campaign artwork and accurately captioned organiser-supplied archive images. |
+
+## Design decisions
+
+- Keep the home screen concise and remove returning-participant and organiser actions that no longer belong on the public site.
+- Use **How to register** as the dominant action. Avoid a conventional “Register here” label because the public page cannot open AFNET for ordinary internet users.
+- Retain supplied imagery as strong editorial moments. Keep dates, fees, payment instructions and status in HTML rather than relying on text embedded in posters.
+- State the route as a simplified timeline rather than a geographical map. This is easier to read on phones and respects the public-information boundary.
+- State plainly that all registered participants receive an event T-shirt and medal. Keep collection date, time and location nearby.
+- Mark reporting and flag-off timings as pending until approved rather than showing an assumed schedule.
+- Keep help compact: short practical answers plus the two organiser phone numbers.
+- Maintain 44-pixel touch targets, visible focus, strong text contrast and reduced-motion support.
 
 ## Reference evidence
 
-Thirteen supplied references were triaged from their live public HTML, JavaScript and CSS. Their strongest transferable patterns were tested against this event journey; distinctive layouts, copy and brand identities were not copied.
+Thirteen supplied references were previously triaged for transferable patterns such as clear choice cards, staged guidance, strong event identity, progressive disclosure and persistent mobile navigation. Their brands and page compositions were not copied. The [national marathon site](https://sekhoniafmarathon.in/) remains an ideas-only event reference; Delhi-specific routes, claims and operating details are not reused.
 
-| Reference group | Transferable principle | Decision for Suratgarh |
-| --- | --- | --- |
-| [RAUM](https://raum-studio-landing-page-b13e8bd4.lovable.app/), [ModFii](https://modfii.com/), [Event Spark](https://event-spark-2.lovable.app/) | Clear choices, staged forms, back controls and accurate progress | Keep race → participant → payment → review, with My entry as the return destination |
-| [AfterImage](https://afterimagefilmfestival.com/), [Editorial portfolio](https://editorial-portfolio-9d8e325b.lovable.app/) | Separate current status, past archive and selected detail | Keep the 2026 event and 2025 memories distinct; avoid a long editorial home page |
-| [Jukebox Burgers](https://jukeboxburgers.com/), [RevCrew](https://revcrew.ai/) | Persistent mobile action and simple process explanation | Keep the four-item bottom navigation; explain status in plain language |
-| [Scandi Haven](https://scandi-haven-shop.lovable.app/), [architecture studio](https://architecture-and-interior-design-ed798653.lovable.app/) | Restrained warm surfaces and consistent image metadata | Retain the current palette, authentic archive captions and one lead painting |
-| [Artist portfolio](https://parallax-artist-portfolio-037d6adf.lovable.app/), [Jordan Studio](https://lovable-prompt-frame.lovable.app/), [Rivonix](https://rivonix.com/), [Revio](https://revio-landing-page-9f7ffd26.lovable.app/) | Strong identity and overview-to-detail navigation | Use one confident station headline; avoid scroll spectacle, hidden navigation, continuous motion and generic claims |
+## Release checks
 
-The [national marathon site](https://sekhoniafmarathon.in/) remains an ideas-only event reference. Delhi-specific routes, claims and operational details are not reused.
+- At 320 and 390 pixels, the page has no horizontal overflow and no off-centre panels.
+- The first phone view communicates station, event and next action without excessive text.
+- All three fees match ₹200, ₹250 and ₹250 everywhere.
+- The AFNET address is readable but not a public hyperlink.
+- The local readiness guide has no form submission, storage or network request.
+- The route timelines contain no internal station location names.
+- POS payment, T-shirt collection, T-shirt and medal inclusion, and contact numbers are easy to find.
+- No old My entry, organiser login, screenshot upload, QR placeholder or public database language appears in the shipped guide.
+- The footer identifies **Flt Lt Balaram Reddy, OIC Sports and Adv** as developer.
+- Type checking, automated tests and the static production build pass before publishing.
 
-## Changes shipped from this review
-
-- Added canonical, Open Graph, Twitter and SportsEvent metadata for recognisable station-message link previews and search discovery.
-- Added an event-guide action that downloads both the 3 October T-shirt collection and 4 October race day to a calendar.
-- Added native sharing with a clipboard fallback and truthful feedback.
-- Added installed-app shortcuts for Races, Event guide and My entry.
-- Prepared same-phone payment tools—Copy UPI ID, Copy amount and Save QR—that remain hidden until a complete, non-placeholder payment configuration is live.
-- Added regression tests for the current public URL, event facts, app shortcuts and standards-compliant calendar output.
-
-## Next priorities
-
-### Must before registration opens
-
-- Configure and verify the new Supabase project, email delivery, station invitation code, payment payee/UPI/QR, private receipt storage and Drive synchronisation in the live environment.
-- Test a complete real-device journey: sign in, code validation, registration, same-phone payment, screenshot upload, organiser review and participant status.
-- Protect an unfinished participant form from accidental dismissal with a clear discard choice; do not persist personal details on a shared device without a deliberate policy.
-
-### Should
-
-- Provide a labelled sample registration walkthrough if preview testing shows that visitors are entering personal details only to inspect later steps.
-- Replace the social preview artwork only if an approved 1200 × 630 station/event image becomes available.
-
-### Could
-
-- Add a three-state entry explanation—payment under review, verified or needs attention—if participant queries show that the existing status language is insufficient.
-
-## Validation
-
-- Production build and TypeScript check pass.
-- All 49 automated tests pass.
-- Home, races, registration preview and event guide pass scripted browser checks at 320, 390, 768 and 1440 pixels, including navigation state, dialog bounds, calendar delivery, sharing feedback and horizontal overflow.
-- The full repository lint command still reports pre-existing warnings in generated UI components and older registration/event modules. The files added for this review pass their focused lint check.
-
-No live payment, registration, database or Drive integration is claimed by this review.
+Post-race certificate generation is intentionally deferred from this release. It can later be configured as a separate private organiser operation based on the signed-off internal Excel export, with approved rehearsal and batch safeguards.
