@@ -1,0 +1,28 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Desert Braves//Sekhon IAF Marathon 2026//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:20261003T090000-sekhon-marathon-collection-suratgarh@desertbraves
+DTSTAMP:20260905T183000Z
+DTSTART:20261003T033000Z
+DTEND:20261003T080000Z
+SUMMARY:T-shirt collection · Sekhon IAF Marathon
+DESCRIPTION:Collect the event T-shirt from 09:00 to 13:30 IST. Please
+ follow the organiser's collection instructions.
+LOCATION:In front of SBI Bank\, inside Air Force Station Suratgarh
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:20261004T050000-sekhon-marathon-suratgarh@desertbraves
+DTSTAMP:20260905T183000Z
+DTSTART;VALUE=DATE:20261004
+DTEND;VALUE=DATE:20261005
+SUMMARY:Sekhon IAF Marathon 2026 · Suratgarh
+DESCRIPTION:5 KM\, 10 KM and 21 KM for airwarriors and families. Race
+ day reporting and flag-off timings will be announced by the organisers.
+LOCATION:Air Force Station Suratgarh
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
