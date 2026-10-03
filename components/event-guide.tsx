@@ -138,7 +138,7 @@ export function EventGuide({
         <p>
           All registered participants will receive an event T-shirt and medal.
           Finisher certificates can be downloaded from the Certificate tab after
-          release on 4 October at 10:30 a.m. IST. Enter your name, race category
+          release on 4 October at 8:00 a.m. IST. Enter your name, race category
           and self-reported finish time.
         </p>
       </section>

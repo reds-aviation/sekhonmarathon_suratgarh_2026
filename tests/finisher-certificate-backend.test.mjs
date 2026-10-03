@@ -33,7 +33,7 @@ function handlerFor(store, overrides = {}) {
 }
 
 test("release stays closed until the precise IST release, enabled switch and final template", () => {
-  assert.equal(getCertificateAvailability(env, new Date("2026-10-04T04:59:59.999Z")).reason, "scheduled");
+  assert.equal(getCertificateAvailability(env, new Date("2026-10-04T02:29:59.999Z")).reason, "scheduled");
   assert.equal(getCertificateAvailability(env, released).available, true);
   assert.equal(getCertificateAvailability({}, released).reason, "disabled");
   assert.equal(getCertificateAvailability({ CERTIFICATES_ENABLED: "true" }, released).reason, "template_not_ready");
@@ -42,7 +42,7 @@ test("release stays closed until the precise IST release, enabled switch and fin
 
 test("a pre-release POST is rejected before validation, quota or private storage", async () => {
   const store = memoryStore();
-  const handler = handlerFor(store, { now: () => new Date("2026-10-04T04:59:59.999Z") });
+  const handler = handlerFor(store, { now: () => new Date("2026-10-04T02:29:59.999Z") });
   const result = await handler(makeRequest(validInput()), { ip: "198.51.100.51" });
   assert.equal(result.status, 403);
   assert.equal((await result.json()).code, "NOT_RELEASED");

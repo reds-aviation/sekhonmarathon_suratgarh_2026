@@ -4,9 +4,9 @@
 
 Public event guide: <https://reds-aviation.github.io/sekhonmarathon_suratgarh_2026/>
 
-This repository publishes a mobile-first event and registration-guidance website on GitHub Pages and Netlify. It does not register participants, accept payments, upload payment proof or store personal information.
+This repository publishes a mobile-first event guide on GitHub Pages and the existing Netlify site. It does not register participants, accept payments or upload payment proof. The Certificate page provides an invalid visual preview before release. After the organiser enables the private Netlify service and the 4 October 2026, 8:00 a.m. IST gate passes, participants may submit their name, race and self-reported finish time for a numbered PDF download.
 
-The organisation's existing AFNET system remains the single registration and payment-confirmation channel. Its internal Excel export remains the source for participant administration and post-race certificate distribution.
+The organisation's existing AFNET system remains the single registration and payment-confirmation channel. The public certificate flow is participant-declared and does not verify completion against an official roster.
 
 ## Confirmed event information
 
@@ -48,23 +48,16 @@ The page includes a simple Yes/No readiness guide. Its answers stay only in the 
 - **Home:** event identity, date, audience, race choices and the main How to register action.
 - **Races:** 5 KM, 10 KM and 21 KM descriptions with the confirmed fees.
 - **How to register:** AFNET procedure, local readiness guide and current payment method.
+- **Certificate:** personal visual preview, release status, and gated numbered PDF download after the event.
 - **Event guide:** important dates, T-shirt collection, inclusions, announcements, contacts and short practical answers.
 - **Route overview:** a simplified public timeline for each distance. It communicates course progression without publishing internal station locations or presenting an operational map.
 - **Why we run and gallery:** the legacy of Fg Offr Nirmal Jit Singh Sekhon, PVC, and organiser-supplied event imagery.
 
 ## Participant data and certificates
 
-The public website has no participant database. Organisers should treat the final internal Excel export as the single source of truth for:
+Before release, the Certificate page renders a visibly invalid preview in the browser without reserving a number or sending participant details to the issuance service. Live issuance requires both the server switch and matching template version as well as the 8:00 a.m. IST gate on 4 October 2026. The service stores only the details needed for an issued certificate in private Netlify Blobs; the PDF is rendered in the participant's browser. The form collects no email, phone number, service number or payment details.
 
-- official registration identity;
-- participant name and email;
-- selected race category;
-- payment confirmation; and
-- race completion confirmation.
-
-Certificate email processing is intentionally deferred from this public-site release. After race day, organisers may configure a separate private workflow from the signed-off internal Excel export. It must use only records with both payment and race-completion confirmation. Its implementation, sender configuration, rehearsal and delivery controls will be reviewed separately and are not part of this repository's published website.
-
-Keep the participant workbook, certificate template, generated PDFs and audit sheet private to authorised organisers. They must never be copied into this repository or exposed through GitHub Pages.
+Completion and finish time are participant-declared. The public service cannot establish official race results or confirm eligibility from the internal AFNET records. Keep official participant workbooks private and do not publish them through the site or repository. See [the certificate release notes](docs/post-run-certificate-release.md) for the deployment and verification procedure.
 
 ## Local development
 
@@ -86,7 +79,7 @@ pnpm run test:targets
 
 Push the approved change to `main`. The GitHub Pages workflow runs type checking, focused linting, automated tests and the static build before publishing `dist/pages`.
 
-To publish the same website on Netlify, connect this GitHub repository in Netlify and keep the detected settings from [netlify.toml](netlify.toml): build command `pnpm run build:netlify` and publish directory `dist/netlify`. Netlify supplies its own site URL during the build, so canonical links and asset paths work at the Netlify root. No database or environment secrets are required.
+To publish the same website on the existing Netlify project, keep the settings from [netlify.toml](netlify.toml): build command `pnpm run build:netlify`, publish directory `dist/netlify`, and function directory `netlify/functions`. The certificate service also requires the runtime variables documented in [the function README](netlify/functions/certificates/README.md). Uploading `dist/netlify` alone does not deploy the function.
 
 Before a public release, verify the built site at phone and laptop widths. Confirm that:
 
@@ -100,4 +93,4 @@ Before a public release, verify the built site at phone and laptop widths. Confi
 
 ## Archived backend work
 
-The repository retains earlier Supabase and receipt-upload designs for engineering reference only. They are superseded and are not part of the current website, deployment or registration process. Netlify is now supported only as an additional static host. See [the archived backend architecture](docs/backend-architecture.md) and [the archived event-day platform plan](docs/event-day-platform.md) for the historical design.
+The repository retains earlier Supabase and receipt-upload designs for engineering reference only. They are superseded and are not part of the current public registration process. Certificate issuance uses the private Netlify Function described above. See [the archived backend architecture](docs/backend-architecture.md) and [the archived event-day platform plan](docs/event-day-platform.md) for historical designs.

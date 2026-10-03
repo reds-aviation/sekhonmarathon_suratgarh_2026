@@ -11,7 +11,7 @@ CERTIFICATES_ENABLED=true
 CERTIFICATE_TEMPLATE_VERSION=finisher-2026-v1
 ```
 
-Both are required. Missing, false or mismatched configuration keeps issuance closed. Variables in `netlify.toml` are build configuration and cannot enable runtime issuance. Availability opens at the later of an enabled release and **4 October 2026, 10:30 a.m. IST** (`2026-10-04T05:00:00Z`). Certificate issue date is fixed at **4 October 2026**. To hold new issuance, set `CERTIFICATES_ENABLED=false` and redeploy.
+Both are required. Missing, false or mismatched configuration keeps issuance closed. Variables in `netlify.toml` are build configuration and cannot enable runtime issuance. Availability opens at the later of an enabled release and **4 October 2026, 8:00 a.m. IST** (`2026-10-04T02:30:00Z`). Certificate issue date is fixed at **4 October 2026**. To hold new issuance, set `CERTIFICATES_ENABLED=false` and redeploy.
 
 ## API
 

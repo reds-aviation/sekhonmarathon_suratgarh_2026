@@ -158,7 +158,7 @@ export function createCertificateHandler({
         {
           error:
             availability.reason === 'scheduled'
-              ? 'Certificate downloads open at 10:30 a.m. IST on 4 October 2026.'
+              ? 'Certificate downloads open at 8:00 a.m. IST on 4 October 2026.'
               : 'Certificate downloads are being prepared. Please check again shortly.',
           code: 'NOT_RELEASED',
           ...availability,

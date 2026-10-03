@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import type { PDFFont } from 'pdf-lib';
 import 'regenerator-runtime/runtime.js';
 import fontkit from '@pdf-lib/fontkit';
+import QRCode from 'qrcode';
 
 export type FinisherCertificateRecord = {
   certificateId: string;
@@ -30,6 +31,8 @@ const SOURCE_WIDTH = 1448;
 const SOURCE_HEIGHT = 1036;
 const NAVY = rgb(0.025, 0.115, 0.4);
 const MUTED = rgb(0.17, 0.25, 0.4);
+/** Printed authority name only; this QR is neither a signature nor verification. */
+export const FINISHER_AUTHORITY_QR_TEXT = 'Air Cmde Deepankar Nautiyal';
 let assetsPromise: Promise<FinisherPdfAssets> | undefined;
 
 async function fetchAsset(path: string) {
@@ -241,6 +244,44 @@ export async function renderFinisherCertificate(
   draw('Status:', metaX, 772, 10.5);
   draw('Successful Finisher', valueX, 772, 12, bold);
 
+  // Fill the former signature space above the printed issuing-authority block.
+  // Four quiet-zone modules keep the plain-text QR scannable against the artwork.
+  const qr = QRCode.create(FINISHER_AUTHORITY_QR_TEXT, {
+    errorCorrectionLevel: 'M',
+  });
+  const qrX = xAt(1138);
+  const qrY = yAt(685);
+  const qrSide = xAt(106);
+  const moduleSize = qrSide / (qr.modules.size + 8);
+  page.drawRectangle({
+    x: qrX,
+    y: qrY,
+    width: qrSide,
+    height: qrSide,
+    color: rgb(1, 1, 1),
+  });
+  for (let row = 0; row < qr.modules.size; row++) {
+    for (let column = 0; column < qr.modules.size; column++) {
+      if (!qr.modules.get(row, column)) continue;
+      page.drawRectangle({
+        x: qrX + (column + 4) * moduleSize,
+        y: qrY + (qr.modules.size - row + 3) * moduleSize,
+        width: moduleSize,
+        height: moduleSize,
+        color: rgb(0, 0, 0),
+      });
+    }
+  }
+  const qrCaption = 'Authority name QR - not a digital signature';
+  draw(
+    qrCaption,
+    qrX + (qrSide - width(qrCaption, 7, regular)) / 2,
+    706,
+    7,
+    regular,
+    MUTED,
+  );
+
   if (assets.preview) {
     const label = 'SAMPLE - NOT FOR ISSUE';
     page.drawText(label, {
@@ -258,7 +299,7 @@ export async function renderFinisherCertificate(
   );
   pdf.setAuthor('Air Force Station Suratgarh');
   pdf.setSubject(
-    'Participant-declared successful completion. Finish time is self-reported, not an official race result.',
+    'Participant-declared successful completion. Finish time is self-reported, not an official race result. The authority-name QR is not a digital signature or verification.',
   );
   pdf.setKeywords([
     'Sekhon Marathon',

@@ -13,6 +13,7 @@ import {
 import type { FinisherCertificateRecord } from '@/lib/finisher-pdf';
 import {
   certificateFingerprint,
+  validateCertificateInput,
   type CertificateRace,
 } from '@/lib/certificate-contract.mjs';
 
@@ -28,6 +29,11 @@ type CertificateStatus = {
   releaseAt: string;
   issueDate: string;
   reason?: string;
+};
+type CertificatePreview = {
+  name: string;
+  race: CertificateRace;
+  finishTime: string;
 };
 let cachedStatus: CertificateStatus | null = null;
 let cachedAt = 0;
@@ -95,11 +101,12 @@ export function CertificateFlash({ onOpen }: { onOpen: () => void }) {
         <span>
           {status?.available
             ? 'Successful finishers — your download is ready.'
-            : 'Downloads open 4 October at 10:30 a.m. IST.'}
+            : 'Preview your certificate now. Downloads open 4 October at 8:00 a.m. IST.'}
         </span>
       </div>
       <button onClick={onOpen}>
-        Get my certificate <ArrowRight size={17} aria-hidden="true" />
+        {status?.available ? 'Get my certificate' : 'Preview certificate'}{' '}
+        <ArrowRight size={17} aria-hidden="true" />
       </button>
     </aside>
   );
@@ -114,6 +121,8 @@ export function FinisherCertificate() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [record, setRecord] = useState<FinisherCertificateRecord | null>(null);
+  const [preview, setPreview] = useState<CertificatePreview | null>(null);
+  const [previewExpanded, setPreviewExpanded] = useState(false);
   const [pdfUrl, setPdfUrl] = useState('');
   const requestIds = useRef(new Map<string, string>());
   const resultHeading = useRef<HTMLHeadingElement>(null);
@@ -162,25 +171,36 @@ export function FinisherCertificate() {
 
   async function createCertificate(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy || !status?.available) return;
+    if (busy) return;
     setBusy(true);
     setError('');
     try {
       if (race !== '5' && race !== '10' && race !== '21')
-        throw new Error('Choose your completed event.');
+        throw new Error('Choose a distance.');
       if (finishTime === '00:00:00')
         throw new Error('Enter a finish time greater than zero.');
-      const payload: {
-        name: string;
-        race: CertificateRace;
-        finishTime: string;
-        completionDeclared: boolean;
-      } = {
+      const details: CertificatePreview = {
         name: name.trim().replace(/\s+/gu, ' ').normalize('NFC'),
-        race,
+        race: race as CertificateRace,
         finishTime: finishTime.trim(),
-        completionDeclared: declared,
       };
+      // The local preview uses the same validation as live issuance, but never
+      // sends a request or reserves a certificate number.
+      const validation = validateCertificateInput({
+        ...details,
+        completionDeclared: true,
+        requestId: '00000000-0000-4000-8000-000000000000',
+      });
+      if (!validation.valid)
+        throw new Error(Object.values(validation.errors)[0]);
+      if (!status?.available) {
+        setPreview(details);
+        setPreviewExpanded(false);
+        return;
+      }
+      if (!declared)
+        throw new Error('Confirm that you completed your selected race.');
+      const payload = { ...details, completionDeclared: true };
       const requestId = await requestIdFor(payload);
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -224,6 +244,8 @@ export function FinisherCertificate() {
 
   function reset() {
     setRecord(null);
+    setPreview(null);
+    setPreviewExpanded(false);
     setPdfUrl('');
     setError('');
     setName('');
@@ -242,9 +264,15 @@ export function FinisherCertificate() {
         <p className="app-kicker">
           Desert Braves · Air Force Station Suratgarh
         </p>
-        <h1 tabIndex={-1}>Take your achievement home.</h1>
+        <h1 tabIndex={-1}>
+          {status?.available
+            ? 'Take your achievement home.'
+            : 'Preview your certificate.'}
+        </h1>
         <p>
-          Thank you for being part of the Sekhon Indian Air Force Marathon 2026.
+          {status?.available
+            ? 'Thank you for being part of the Sekhon Indian Air Force Marathon 2026.'
+            : 'See how your certificate will look. This preview is not an issued certificate.'}
         </p>
       </header>
       <div className="certificate-layout">
@@ -301,13 +329,13 @@ export function FinisherCertificate() {
               {!status?.available && (
                 <output className="certificate-availability">
                   {statusError
-                    ? 'The certificate service is being prepared. Planned opening: 4 October at 10:30 a.m. IST, once activated by the organisers. Please check again shortly.'
+                    ? 'Preview is available now. The certificate service is being prepared; downloads open from 8:00 a.m. IST on 4 October once released by the organisers.'
                     : status?.reason === 'disabled' ||
                         status?.reason === 'template_not_ready'
-                      ? 'Certificate downloads are awaiting release by the organisers. Please check again shortly.'
+                      ? 'Preview is available now. Certificate downloads are awaiting release by the organisers.'
                       : status
-                        ? 'Downloads open on 4 October 2026 at 10:30 a.m. IST, once released by the organisers.'
-                        : 'Checking certificate availability…'}
+                        ? 'Preview is available now. Downloads open from 8:00 a.m. IST on 4 October 2026, once released by the organisers.'
+                        : 'Preview is available now. Checking download availability…'}
                 </output>
               )}
               <form onSubmit={(event) => void createCertificate(event)}>
@@ -316,18 +344,26 @@ export function FinisherCertificate() {
                   id="certificate-name"
                   name="participantName"
                   value={name}
-                  onChange={(event) => setName(event.target.value)}
+                  onChange={(event) => {
+                    setName(event.target.value);
+                    setPreview(null);
+                  }}
                   required
                   maxLength={80}
                   autoComplete="name"
                   placeholder="Full name"
                   disabled={busy}
                 />
-                <label htmlFor="certificate-race">Event completed</label>
+                <label htmlFor="certificate-race">
+                  {status?.available ? 'Event completed' : 'Event to preview'}
+                </label>
                 <select
                   id="certificate-race"
                   value={race}
-                  onChange={(event) => setRace(event.target.value)}
+                  onChange={(event) => {
+                    setRace(event.target.value);
+                    setPreview(null);
+                  }}
                   required
                   disabled={busy}
                 >
@@ -337,13 +373,19 @@ export function FinisherCertificate() {
                   <option value="21">21 km · Half Marathon</option>
                 </select>
                 <label htmlFor="certificate-time">
-                  Your finish time <small>Self-reported</small>
+                  {status?.available
+                    ? 'Your finish time'
+                    : 'Sample finish time'}{' '}
+                  <small>
+                    {status?.available ? 'Self-reported' : 'Preview only'}
+                  </small>
                 </label>
                 <input
                   id="certificate-time"
                   name="finishTime"
                   value={finishTime}
                   onChange={(event) => {
+                    setPreview(null);
                     const digits = event.target.value
                       .replace(/\D/gu, '')
                       .slice(0, 6);
@@ -367,22 +409,25 @@ export function FinisherCertificate() {
                   Type six digits: 004530 becomes 00:45:30 (45 minutes, 30
                   seconds).
                 </p>
-                <label className="certificate-declaration">
-                  <input
-                    type="checkbox"
-                    checked={declared}
-                    onChange={(event) => setDeclared(event.target.checked)}
-                    required
-                    disabled={busy}
-                  />
-                  <span>
-                    I participated in and completed this event. My name,
-                    distance and self-reported finish time are correct.
-                  </span>
-                </label>
+                {status?.available && (
+                  <label className="certificate-declaration">
+                    <input
+                      type="checkbox"
+                      checked={declared}
+                      onChange={(event) => setDeclared(event.target.checked)}
+                      required
+                      disabled={busy}
+                    />
+                    <span>
+                      I participated in and completed this event. My name,
+                      distance and self-reported finish time are correct.
+                    </span>
+                  </label>
+                )}
                 <p className="certificate-note certificate-provenance">
-                  This certificate records participant-declared completion and
-                  timing; it is not an official timed result.
+                  {status?.available
+                    ? 'This certificate records participant-declared completion and timing; it is not an official timed result.'
+                    : 'This preview is a sample layout only. It does not confirm participation or completion.'}
                 </p>
                 {error && (
                   <p className="certificate-error" role="alert">
@@ -392,7 +437,7 @@ export function FinisherCertificate() {
                 <button
                   className="certificate-primary"
                   type="submit"
-                  disabled={busy || !status?.available}
+                  disabled={busy}
                 >
                   {busy ? (
                     <LoaderCircle className="certificate-spinner" size={19} />
@@ -400,24 +445,127 @@ export function FinisherCertificate() {
                     <Award size={19} />
                   )}
                   {busy
-                    ? 'Preparing your certificate…'
-                    : 'Create my certificate'}
+                    ? status?.available
+                      ? 'Preparing your certificate…'
+                      : 'Preparing preview…'
+                    : status?.available
+                      ? 'Create my certificate'
+                      : 'Preview my certificate'}
                 </button>
                 <p className="certificate-privacy">
-                  Your name, race and self-reported time are saved privately to
-                  issue your certificate. No phone number or email is required.
+                  {status?.available
+                    ? 'Your name, race and self-reported time are saved privately to issue your certificate. No phone number or email is required.'
+                    : 'Preview details stay on this screen. No certificate number is issued or saved, and there is no download before release.'}
                 </p>
               </form>
             </>
           )}
         </section>
         <aside className="certificate-art">
-          <img
-            src={`${base}/assets/certificate/finisher-template.jpg`}
-            width="1448"
-            height="1036"
-            alt="Sekhon Marathon certificate design with a tricolour border, runners and Air Force Station Suratgarh title"
-          />
+          {preview && !record ? (
+            <section
+              className="certificate-preview"
+              aria-label="Personalised sample certificate preview"
+            >
+              <strong className="certificate-preview-alert">
+                PREVIEW · NOT VALID FOR ISSUE
+              </strong>
+              <div
+                className={`certificate-preview-viewport${previewExpanded ? ' is-expanded' : ''}`}
+                role={previewExpanded ? 'region' : undefined}
+                tabIndex={previewExpanded ? 0 : -1}
+                aria-label={
+                  previewExpanded
+                    ? 'Enlarged sample certificate; scroll sideways to inspect it'
+                    : undefined
+                }
+              >
+                <div className="certificate-preview-sheet">
+                  <img
+                    src={`${base}/assets/certificate/finisher-template.jpg`}
+                    width="1448"
+                    height="1086"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span className="certificate-preview-line certificate-preview-certifies">
+                    This certifies that
+                  </span>
+                  <strong className="certificate-preview-line certificate-preview-name">
+                    {preview.name}
+                  </strong>
+                  <span className="certificate-preview-line certificate-preview-completed">
+                    has successfully completed the {preview.race} km event
+                  </span>
+                  <span className="certificate-preview-line certificate-preview-location">
+                    at Air Force Station Suratgarh on 04 October 2026.
+                  </span>
+                  <strong className="certificate-preview-line certificate-preview-time">
+                    Self-reported finish time: {preview.finishTime}
+                  </strong>
+                  <span className="certificate-preview-line certificate-preview-disclaimer">
+                    Completion and finish time declared by participant.
+                  </span>
+                  <span className="certificate-preview-number">
+                    Certificate No.: PREVIEW ONLY
+                    <br />
+                    Date of issue: 04 October 2026
+                    <br />
+                    Status: SAMPLE — NOT VALID
+                  </span>
+                  <img
+                    className="certificate-preview-qr"
+                    src={`${base}/assets/certificate/authority-name-qr.svg`}
+                    width="106"
+                    height="106"
+                    alt="Informational QR code containing Air Cmde Deepankar Nautiyal; not a digital signature"
+                  />
+                  <span className="certificate-preview-qr-label">
+                    Authority name QR · not a signature
+                  </span>
+                  <strong
+                    className="certificate-preview-watermark"
+                    aria-hidden="true"
+                  >
+                    SAMPLE · NOT VALID
+                  </strong>
+                </div>
+              </div>
+              <button
+                className="certificate-preview-zoom"
+                type="button"
+                aria-pressed={previewExpanded}
+                onClick={() => setPreviewExpanded((expanded) => !expanded)}
+              >
+                <Eye size={17} aria-hidden="true" />
+                {previewExpanded
+                  ? 'Fit preview to screen'
+                  : 'Enlarge preview to inspect details'}
+              </button>
+              {previewExpanded && (
+                <p className="certificate-note">
+                  Scroll sideways within the sample to inspect it.
+                </p>
+              )}
+              <p className="certificate-preview-summary">
+                <strong>{preview.name}</strong> · {preview.race} km · sample
+                time {preview.finishTime}
+              </p>
+              <p className="certificate-note">
+                This visual sample has no certificate number and cannot be
+                downloaded. The QR contains only the issuing authority’s name;
+                it is not a signature or verification code. Final PDF text may
+                fit slightly differently.
+              </p>
+            </section>
+          ) : (
+            <img
+              src={`${base}/assets/certificate/finisher-template.jpg`}
+              width="1448"
+              height="1036"
+              alt="Sekhon Marathon certificate design with a tricolour border, runners and Air Force Station Suratgarh title"
+            />
+          )}
           <h2>One run. A lasting memory.</h2>
           <p>Run · Soar · Inspire</p>
           <p className="certificate-note">Date of issue: 04 October 2026</p>

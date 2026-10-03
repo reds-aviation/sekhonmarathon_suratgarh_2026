@@ -225,6 +225,156 @@
   border-radius: 5px;
   box-shadow: 0 8px 20px #153f3910;
 }
+.certificate-preview-alert {
+  display: block;
+  padding: 10px 12px;
+  border: 2px solid #a53831;
+  border-radius: 5px 5px 0 0;
+  background: #fff1ee;
+  color: #8e2823;
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+.certificate-preview-sheet {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1448 / 1036;
+  container-type: inline-size;
+  border: 1px solid #d6dcd4;
+  border-top: 0;
+  background: #fff;
+  box-shadow: 0 8px 20px #153f3910;
+}
+.certificate-preview-viewport {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.certificate-preview-viewport.is-expanded .certificate-preview-sheet {
+  width: max(780px, 180%);
+}
+.certificate-preview-viewport:focus-visible {
+  outline: 3px solid #b99456;
+  outline-offset: 2px;
+}
+.certificate-preview-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 9px;
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  color: #205e50;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.certificate-preview-sheet > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.certificate-preview-line,
+.certificate-preview-number {
+  position: absolute;
+  z-index: 1;
+  color: #071d62;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.1;
+}
+.certificate-preview-line {
+  left: 10%;
+  width: 80%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+.certificate-preview-certifies {
+  top: 43.2%;
+  font-size: 2.8cqw;
+  font-style: italic;
+}
+.certificate-preview-name {
+  top: 47.5%;
+  font-size: 3.6cqw;
+}
+.certificate-preview-completed {
+  top: 52.1%;
+  font-size: 2.7cqw;
+  font-style: italic;
+}
+.certificate-preview-location {
+  top: 56.1%;
+  font-size: 2.3cqw;
+  font-style: italic;
+}
+.certificate-preview-time {
+  top: 59.8%;
+  font-size: 2.4cqw;
+}
+.certificate-preview-disclaimer {
+  top: 63.2%;
+  font-size: 1.4cqw;
+}
+.certificate-preview-number {
+  top: 65.6%;
+  left: 11.2%;
+  font-size: 1.8cqw;
+  line-height: 1.6;
+}
+.certificate-preview-sheet > .certificate-preview-qr {
+  z-index: 1;
+  inset: auto;
+  top: 55.9%;
+  left: 78.6%;
+  width: 7.4%;
+  height: auto;
+  padding: 1px;
+  border: 1px solid #1c3658;
+  background: #fff;
+}
+.certificate-preview-qr-label {
+  position: absolute;
+  z-index: 1;
+  top: 66.7%;
+  left: 74%;
+  width: 17%;
+  color: #071d62;
+  font-size: 1.05cqw;
+  line-height: 1.1;
+  text-align: center;
+}
+.certificate-preview-watermark {
+  position: absolute;
+  z-index: 2;
+  top: 56%;
+  left: 50%;
+  width: 90%;
+  transform: translate(-50%, -50%) rotate(-14deg);
+  border: 0.11em solid #a53831;
+  color: #a53831;
+  background: #fff8;
+  font-size: 6cqw;
+  line-height: 1.35;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0.78;
+  pointer-events: none;
+}
+.certificate-preview-summary {
+  margin-top: 12px;
+  color: #244d45;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
 .certificate-art h2 {
   font-family: 'Barlow Condensed', Arial, sans-serif;
   line-height: 1.25;

@@ -320,7 +320,7 @@ export function RegistrationGuide({
           <p>
             Open the Certificate tab after your run. Enter your name, race
             category and self-reported finish time to download your certificate
-            after release on 4 October at 10:30 a.m. IST.
+            after release on 4 October at 8:00 a.m. IST.
           </p>
         </div>
       </aside>

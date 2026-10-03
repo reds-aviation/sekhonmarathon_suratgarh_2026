@@ -35,7 +35,7 @@ const titles: Record<SitePage, string> = {
   races: 'Choose your race',
   register: 'How to register',
   guide: 'Event guide',
-  certificate: 'Download certificate',
+  certificate: 'Certificate',
   tribute: 'Why we run',
   gallery: 'Campaign & memories',
 };
@@ -258,9 +258,9 @@ export function PublicGuide() {
                 href="#certificate"
                 onClick={(event) => follow(event, 'certificate')}
               >
-                Get my certificate <Award size={17} aria-hidden="true" />
+                Preview my certificate <Award size={17} aria-hidden="true" />
               </a>
-              <p className="app-hero-deadline">Certificate downloads · 4 October, 10:30 a.m. IST</p>
+              <p className="app-hero-deadline">Preview now · Downloads from 4 October, 8:00 a.m. IST</p>
             </div>
           </section>
           <section className="app-home-facts" aria-label="Event at a glance">
