@@ -1,11 +1,23 @@
 {
   "index.html": {
-    "file": "assets/index-CJQE2g6K.js",
+    "file": "assets/index-HLjUurX0.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
+    "dynamicImports": [
+      "lib/finisher-pdf.ts"
+    ],
     "css": [
-      "assets/index-C1NhmKLp.css"
+      "assets/index-D-m7kK2h.css"
+    ]
+  },
+  "lib/finisher-pdf.ts": {
+    "file": "assets/finisher-pdf-Cz8mrvQF.js",
+    "name": "finisher-pdf",
+    "src": "lib/finisher-pdf.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html"
     ]
   }
 }
