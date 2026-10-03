@@ -92,7 +92,7 @@ void test('public journey points eligible runners to the official AFNET process'
   );
   assert.match(
     guide,
-    /Developed by Flt Lt Balaram Reddy, OIC Sports and Adv/u,
+    /Website created by Flt Lt B\. Reddy \(38703\)/u,
   );
   assert.match(eventGuide, /Reporting and flag-off timings to be announced/u);
   assert.match(

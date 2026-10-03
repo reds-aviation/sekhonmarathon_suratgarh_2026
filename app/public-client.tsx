@@ -8,6 +8,7 @@ import './app-navigation.css';
 import './event-gallery.css';
 import './homepage-clarity.css';
 import './participant-guidance.css';
+import './post-run.css';
 import { registerPublicOfflineWorker } from './pwa';
 
 createRoot(document.getElementById('root')!).render(

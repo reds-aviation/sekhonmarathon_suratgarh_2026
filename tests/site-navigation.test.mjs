@@ -12,6 +12,7 @@ test('page fragments round-trip without depending on a hosting base path', () =>
     'races',
     'register',
     'guide',
+    'certificate',
     'tribute',
     'gallery',
   ]) {

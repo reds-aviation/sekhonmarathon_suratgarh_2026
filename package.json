@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
+    "@netlify/blobs": "11.1.0",
     "@shadcn/react": "0.3.0",
     "@supabase/supabase-js": "^2.115.0",
     "class-variance-authority": "0.7.1",

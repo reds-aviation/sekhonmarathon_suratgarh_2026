@@ -3,6 +3,7 @@ export type SitePage =
   | 'races'
   | 'register'
   | 'guide'
+  | 'certificate'
   | 'tribute'
   | 'gallery';
 export type PortalView = 'participant' | 'organiser' | 'verify';
@@ -16,6 +17,7 @@ const pageHashes: Record<SitePage, string> = {
   races: '#races',
   register: '#register',
   guide: '#guide',
+  certificate: '#certificate',
   tribute: '#tribute',
   gallery: '#gallery',
 };

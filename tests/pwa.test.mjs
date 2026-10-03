@@ -98,7 +98,7 @@ for (const field of ['id', 'scope', 'start_url']) {
 }
 assert.equal(manifest.display, 'standalone'); checks++;
 assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ['192x192', '512x512']); checks++;
-assert.deepEqual(manifest.shortcuts.map((shortcut) => shortcut.url), ['./#races', './#register']); checks++;
+assert.deepEqual(manifest.shortcuts.map((shortcut) => shortcut.url), ['./#races', './#certificate']); checks++;
 assert.equal(checks, 29, 'Keep all cache/privacy/manifest regression assertions');
 });
 

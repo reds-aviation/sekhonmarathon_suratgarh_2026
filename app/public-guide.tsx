@@ -1,3 +1,4 @@
+/* eslint-disable next/no-img-element -- Public images are optimised files on static Vite hosts. */
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import {
   ArrowRight,
@@ -6,12 +7,12 @@ import {
   CupSoda,
   Flag,
   Home as HomeIcon,
-  ListChecks,
   Medal,
   ShieldCheck,
   Shirt,
   Award,
 } from 'lucide-react';
+import { CertificateFlash, FinisherCertificate } from '@/components/finisher-certificate';
 import { EventGallery } from '@/components/event-gallery';
 import { EventGuide } from '@/components/event-guide';
 import { EventTribute } from '@/components/event-tribute';
@@ -34,6 +35,7 @@ const titles: Record<SitePage, string> = {
   races: 'Choose your race',
   register: 'How to register',
   guide: 'Event guide',
+  certificate: 'Download certificate',
   tribute: 'Why we run',
   gallery: 'Campaign & memories',
 };
@@ -185,7 +187,7 @@ export function PublicGuide() {
           </span>
         </a>
         <nav className="app-desktop-nav" aria-label="Main navigation">
-          {(['home', 'races', 'register', 'guide', 'tribute'] as SitePage[]).map((view) => (
+          {(['home', 'certificate', 'races', 'guide', 'tribute'] as SitePage[]).map((view) => (
             <a
               key={view}
               href={hashForPage(view)}
@@ -194,6 +196,8 @@ export function PublicGuide() {
             >
               {view === 'home'
                 ? 'Home'
+                : view === 'certificate'
+                  ? 'Certificate'
                 : view === 'races'
                   ? 'Races'
                   : view === 'register'
@@ -215,6 +219,8 @@ export function PublicGuide() {
           <span>Why we run</span>
         </a>
       </header>
+
+      {page !== 'certificate' && <CertificateFlash onOpen={() => navigate('certificate')} />}
 
       {page === 'home' && (
         <main id="main" className="app-home" tabIndex={-1}>
@@ -242,30 +248,31 @@ export function PublicGuide() {
               </h1>
               <p className="app-hero-station">Air Force Station Suratgarh</p>
               <p className="app-tagline">Run · Soar · Inspire</p>
+              <p className="post-run-intro">Your effort. Your achievement. A lasting memory with the Desert Braves.</p>
               <p className="app-hero-details">
                 <span>Sunday, 4 October 2026</span>
                 <span>5 KM · 10 KM · 21 KM</span>
               </p>
               <a
                 className="app-hero-action"
-                href="#register"
-                onClick={(event) => follow(event, 'register')}
+                href="#certificate"
+                onClick={(event) => follow(event, 'certificate')}
               >
-                How to register <ArrowRight size={17} aria-hidden="true" />
+                Get my certificate <Award size={17} aria-hidden="true" />
               </a>
-              <p className="app-hero-deadline">Registration closes 27 September</p>
+              <p className="app-hero-deadline">Certificate downloads · 4 October, 10:30 a.m. IST</p>
             </div>
           </section>
           <section className="app-home-facts" aria-label="Event at a glance">
             <div><small>Race day</small><strong>4 October 2026</strong></div>
             <div><small>Three distances</small><strong>5 KM · 10 KM · 21 KM</strong></div>
-            <div><small>Registration</small><strong>Official AFNET portal</strong></div>
+            <div><small>Certificate issue date</small><strong>04 October 2026</strong></div>
           </section>
           <div className="app-home-grid">
             <section aria-labelledby="home-races-title">
               <div className="app-section-title">
-                <h2 id="home-races-title">Find your distance.</h2>
-                <span>Confirmed fees</span>
+                <h2 id="home-races-title">Every distance. One tribute.</h2>
+                <span>2026 race categories</span>
               </div>
               <div className="app-distance-list">
                 {RACES.map((race) => (
@@ -283,18 +290,18 @@ export function PublicGuide() {
                 ))}
               </div>
               <p className="app-small-note">
-                Register on AFNET by 27 September. Pay at Sports Section during normal working hours through the SI POS machine.
+                Thank you for being part of our running community. Registration is closed; event information remains available in the guide.
               </p>
             </section>
-            <section className="app-home-links" aria-label="Before your run">
-              <a className="app-guide-shortcut app-register-shortcut" href="#register" onClick={(event) => follow(event, 'register')}>
-                <ListChecks size={23} />
-                <span><b>How to register</b><small>AFNET steps · payment guidance</small></span>
+            <section className="app-home-links" aria-label="Your finish-line experience">
+              <a className="app-guide-shortcut app-register-shortcut" href="#certificate" onClick={(event) => follow(event, 'certificate')}>
+                <Award size={23} />
+                <span><b>Your finisher certificate</b><small>Name · distance · self-reported time</small></span>
                 <ChevronRight size={18} />
               </a>
               <a className="app-guide-shortcut" href="#guide" onClick={(event) => follow(event, 'guide')}>
                 <BookOpen size={23} />
-                <span><b>Your event guide</b><small>T-shirt collection · 3 October</small></span>
+                <span><b>Your event guide</b><small>Routes · event details · help</small></span>
                 <ChevronRight size={18} />
               </a>
               <a className="app-tribute-teaser" href="#tribute" onClick={(event) => follow(event, 'tribute')}>
@@ -320,6 +327,7 @@ export function PublicGuide() {
           </div>
         </main>
       )}
+      {page === 'certificate' && <FinisherCertificate />}
 
       {page === 'races' && (
         <main id="main" className="app-view app-races-view" tabIndex={-1}>
@@ -327,7 +335,7 @@ export function PublicGuide() {
             <p className="app-kicker">Your start line</p>
             <h1 tabIndex={-1}>Choose your distance.</h1>
             <p>Tap a race for details.</p>
-            <p className="app-status" aria-live="polite"><span />Official registration is completed on AFNET</p>
+            <p className="app-status" aria-live="polite"><span />Registration is closed · certificate downloads open 4 October</p>
           </header>
           <div className="app-race-choices">
             {RACES.map((race) => (
@@ -355,8 +363,8 @@ export function PublicGuide() {
                     >
                       View this route <ArrowRight size={18} />
                     </a>
-                    <a className="app-primary" href="#register" onClick={(event) => follow(event, 'register')}>
-                      How to register <ArrowRight size={18} />
+                    <a className="app-primary" href="#certificate" onClick={(event) => follow(event, 'certificate')}>
+                      Get my certificate <Award size={18} />
                     </a>
                   </div>
                 </div>
@@ -379,7 +387,7 @@ export function PublicGuide() {
           </section>
           <aside className="app-race-help">
             <ShieldCheck size={19} />
-            <p>Airwarriors and families only. Complete the official form from an AFNET-connected system by 27 September 2026.</p>
+            <p>For airwarriors and families. Registration was completed through the official AFNET portal.</p>
           </aside>
         </main>
       )}
@@ -403,7 +411,7 @@ export function PublicGuide() {
       <footer className="app-footer">
         <div className="app-footer-credit">
           <span>© 2026 Desert Braves · Air Force Station Suratgarh</span>
-          <strong>Developed by Flt Lt Balaram Reddy, OIC Sports and Adv</strong>
+          <strong>Website created by Flt Lt B. Reddy (38703)</strong>
         </div>
         <details className="app-more">
           <summary>More information</summary>
@@ -421,8 +429,8 @@ export function PublicGuide() {
         <a href="#races" aria-current={page === 'races' ? 'page' : undefined} onClick={(event) => follow(event, 'races')}>
           <Flag size={21} /><span>Races</span>
         </a>
-        <a href="#register" aria-current={page === 'register' ? 'page' : undefined} onClick={(event) => follow(event, 'register')}>
-          <ListChecks size={21} /><span>How to register</span>
+        <a href="#certificate" aria-current={page === 'certificate' ? 'page' : undefined} onClick={(event) => follow(event, 'certificate')}>
+          <Award size={21} /><span>Certificate</span>
         </a>
         <a href="#guide" aria-current={page === 'guide' ? 'page' : undefined} onClick={(event) => follow(event, 'guide')}>
           <BookOpen size={21} /><span>Event guide</span>

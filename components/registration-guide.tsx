@@ -318,9 +318,9 @@ export function RegistrationGuide({
         <div>
           <h2>Digital certificate</h2>
           <p>
-            Enter your name and email carefully on the official form.
-            Certificate arrangements will be communicated by the organisers
-            after race completion is confirmed.
+            Open the Certificate tab after your run. Enter your name, race
+            category and self-reported finish time to download your certificate
+            after release on 4 October at 10:30 a.m. IST.
           </p>
         </div>
       </aside>

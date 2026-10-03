@@ -79,6 +79,7 @@ const titles: Record<SitePage, string> = {
   races: 'Choose your race',
   register: 'How to register',
   guide: 'Event guide',
+  certificate: 'Download certificate',
   tribute: 'Why we run',
   gallery: 'Campaign & memories',
 };

@@ -25,9 +25,9 @@
       ]
     },
     {
-      "name": "How to register",
-      "short_name": "AFNET guide",
-      "url": "./#register",
+      "name": "Download certificate",
+      "short_name": "Certificate",
+      "url": "./#certificate",
       "icons": [
         {
           "src": "assets/app-icon-192.png",

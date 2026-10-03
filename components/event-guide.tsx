@@ -137,9 +137,9 @@ export function EventGuide({
         </ul>
         <p>
           All registered participants will receive an event T-shirt and medal.
-          Certificate arrangements will be communicated by the organisers after
-          race completion is confirmed. Use your correct name and email on the
-          official form.
+          Finisher certificates can be downloaded from the Certificate tab after
+          release on 4 October at 10:30 a.m. IST. Enter your name, race category
+          and self-reported finish time.
         </p>
       </section>
 

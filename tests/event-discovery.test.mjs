@@ -41,7 +41,7 @@ void test('installed-app shortcuts and calendar downloads retain the confirmed e
     manifest.shortcuts.map(({ url }) => url),
     [
       './#races',
-      './#register',
+      './#certificate',
     ],
   );
 

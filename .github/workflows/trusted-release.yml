@@ -32,6 +32,7 @@ jobs:
       # The published artifact is the static AFNET guide. Historical backend
       # tests remain available through `pnpm test` but do not govern Pages.
       - run: pnpm run test:public
+      - run: node --test tests/finisher-certificate-backend.test.mjs tests/finisher-pdf.test.mjs tests/web-fonts.test.mjs
       - name: Publish the static artifact to gh-pages
         env:
           DEPLOY_DIR: ${{ runner.temp }}/sekhon-marathon-pages

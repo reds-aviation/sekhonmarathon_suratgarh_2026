@@ -25,3 +25,4 @@ jobs:
       - run: pnpm run lint:platform
       - run: pnpm run verify:targets
       - run: pnpm run test:public
+      - run: node --test tests/finisher-certificate-backend.test.mjs tests/finisher-pdf.test.mjs tests/web-fonts.test.mjs

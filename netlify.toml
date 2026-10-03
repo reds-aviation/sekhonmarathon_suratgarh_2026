@@ -5,5 +5,21 @@
 [build.environment]
   NODE_VERSION = "22.13.0"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/api/certificates"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/.netlify/functions/certificates"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Content-Type-Options = "nosniff"
+
 # Netlify supplies URL during its build. The Vite configuration uses it for
 # canonical and social metadata while this target keeps every asset path at /.
