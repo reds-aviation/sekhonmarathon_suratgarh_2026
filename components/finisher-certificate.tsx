@@ -559,12 +559,24 @@ export function FinisherCertificate() {
               </p>
             </section>
           ) : (
-            <img
-              src={`${base}/assets/certificate/finisher-template.jpg`}
-              width="1448"
-              height="1036"
-              alt="Sekhon Marathon certificate design with a tricolour border, runners and Air Force Station Suratgarh title"
-            />
+            <div className="certificate-preview-sheet">
+              <img
+                src={`${base}/assets/certificate/finisher-template.jpg`}
+                width="1448"
+                height="1086"
+                alt="Sekhon Marathon certificate design with a tricolour border, runners and Air Force Station Suratgarh title"
+              />
+              <img
+                className="certificate-preview-qr"
+                src={`${base}/assets/certificate/authority-name-qr.svg`}
+                width="106"
+                height="106"
+                alt="Informational QR code containing Air Cmde Deepankar Nautiyal; not a digital signature"
+              />
+              <span className="certificate-preview-qr-label">
+                Authority name QR · not a signature
+              </span>
+            </div>
           )}
           <h2>One run. A lasting memory.</h2>
           <p>Run · Soar · Inspire</p>
